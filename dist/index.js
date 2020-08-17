@@ -10495,7 +10495,7 @@ class Term {
                 const script = buildScript || "build";
                 yield exec_1.exec(`${manager} run ${script}`);
             }
-            const yarnOrNpx = manager !== "yarn" ? "yarn" : "npx";
+            const yarnOrNpx = manager === "yarn" ? "yarn" : "npx";
             const status = yield exec_1.exec(`${yarnOrNpx} size-limit --json`, [], {
                 windowsVerbatimArguments: true,
                 ignoreReturnCode: true,
