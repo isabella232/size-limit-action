@@ -6,7 +6,6 @@ const BUILD_STEP = "build";
 
 class Term {
   async execSizeLimit(
-    branch?: string,
     skipStep?: string,
     buildScript?: string,
     windowsVerbatimArguments?: boolean,
@@ -14,16 +13,6 @@ class Term {
   ): Promise<{ status: number; output: string }> {
     const manager = hasYarn() ? "yarn" : "npm";
     let output = "";
-
-    if (branch) {
-      try {
-        await exec(`git fetch origin ${branch} --depth=1`);
-      } catch (error) {
-        console.log("Fetch failed", error.message);
-      }
-
-      await exec(`git checkout -f ${branch}`);
-    }
 
     if (skipStep !== INSTALL_STEP && skipStep !== BUILD_STEP) {
       await exec(`${manager} install`, [], {
@@ -38,7 +27,7 @@ class Term {
       });
     }
 
-    const status = await exec("npx size-limit --json", [], {
+    const status = await exec("npx", ["size-limit", "--json"], {
       windowsVerbatimArguments,
       ignoreReturnCode: true,
       listeners: {
