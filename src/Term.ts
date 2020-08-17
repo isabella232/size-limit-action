@@ -32,7 +32,9 @@ class Term {
       await exec(`${manager} run ${script}`);
     }
 
-    const status = await exec("npx size-limit --json", [], {
+    const yarnOrNpx = manager !== "yarn" ? "yarn" : "npx";
+
+    const status = await exec(`${yarnOrNpx} size-limit --json`, [], {
       windowsVerbatimArguments: true,
       ignoreReturnCode: true,
       listeners: {
