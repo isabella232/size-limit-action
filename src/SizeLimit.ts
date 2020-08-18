@@ -136,7 +136,12 @@ class SizeLimit {
     base: { [name: string]: IResult },
     current: { [name: string]: IResult }
   ): Array<Array<string>> {
-    const names = [...new Set([...Object.keys(base), ...Object.keys(current)])];
+    const names = [
+      ...new Set([
+        ...(base ? [Object.keys(base)] : []),
+        ...Object.keys(current)
+      ])
+    ];
     const isSize = names.some(
       (name: string) => current[name] && current[name].total === undefined
     );

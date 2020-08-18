@@ -107,7 +107,6 @@ async function run() {
       // eslint-disable-next-line camelcase
       workflow_id: `${process.env.GITHUB_WORKFLOW}.yml`
     });
-    console.log(await fs.readFile(resultsFilePath, { encoding: "utf8" }));
 
     const { status, output } = await term.execSizeLimit(
       null,
@@ -117,9 +116,9 @@ async function run() {
     );
     try {
       current = limit.parseResults(output);
-      base = JSON.parse(
-        await fs.readFile(resultsFilePath, { encoding: "utf8" })
-      );
+      // base = JSON.parse(
+      //   await fs.readFile(resultsFilePath, { encoding: "utf8" })
+      // );
     } catch (error) {
       console.log(
         "Error parsing size-limit output. The output should be a json."

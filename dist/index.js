@@ -3221,11 +3221,12 @@ function run() {
             yield github_fetch_workflow_artifact_1.default(octokit, Object.assign(Object.assign({}, repo), { artifactName: ARTIFACT_NAME, branch: mainBranch, downloadPath: __dirname, 
                 // eslint-disable-next-line camelcase
                 workflow_id: `${process.env.GITHUB_WORKFLOW}.yml` }));
-            console.log(yield fs_1.promises.readFile(resultsFilePath, { encoding: "utf8" }));
             const { status, output } = yield term.execSizeLimit(null, skipStep, buildScript, windowsVerbatimArguments);
             try {
                 current = limit.parseResults(output);
-                base = JSON.parse(yield fs_1.promises.readFile(resultsFilePath, { encoding: "utf8" }));
+                // base = JSON.parse(
+                //   await fs.readFile(resultsFilePath, { encoding: "utf8" })
+                // );
             }
             catch (error) {
                 console.log("Error parsing size-limit output. The output should be a json.");
@@ -13681,7 +13682,12 @@ class SizeLimit {
         }, {});
     }
     formatResults(base, current) {
-        const names = [...new Set([...Object.keys(base), ...Object.keys(current)])];
+        const names = [
+            ...new Set([
+                ...(base ? [Object.keys(base)] : []),
+                ...Object.keys(current)
+            ])
+        ];
         const isSize = names.some((name) => current[name] && current[name].total === undefined);
         const header = isSize
             ? SizeLimit.SIZE_RESULTS_HEADER
