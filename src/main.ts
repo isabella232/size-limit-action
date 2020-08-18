@@ -9,8 +9,11 @@ import * as glob from "@actions/glob";
 
 // @ts-ignore
 import table from "markdown-table";
+import fetchOtherArtifact from "github-fetch-workflow-artifact";
+
 import Term from "./Term";
 import SizeLimit from "./SizeLimit";
+import download from "github-fetch-workflow-artifact";
 
 const SIZE_LIMIT_URL = "https://github.com/ai/size-limit";
 const SIZE_LIMIT_HEADING = `## [size-limit](${SIZE_LIMIT_URL}) report`;
@@ -106,7 +109,23 @@ async function run() {
       windowsVerbatimArguments
     );
 
-    await artifactClient.downloadArtifact(ARTIFACT_NAME, __dirname);
+    console.log({
+      workflowId: `${process.env.GITHUB_WORKFLOW}.yml`,
+      downloadPath: __dirname,
+      artifactName: ARTIFACT_NAME,
+      branch: mainBranch,
+      ...repo
+    });
+    // @ts-ignore
+    await download(octokit, {
+      ...repo,
+      artifactName: ARTIFACT_NAME,
+      branch: mainBranch,
+      downloadPath: __dirname,
+
+      // eslint-disable-next-line camelcase
+      workflow_id: `${process.env.GITHUB_WORKFLOW}.yml`
+    });
 
     try {
       current = limit.parseResults(output);
