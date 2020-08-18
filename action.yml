@@ -18,6 +18,10 @@ inputs:
     required: false
     description: 'exec `size-limit` with the option `windowsVerbatimArguments`'
     default: true
+  main_branch:
+    required: false
+    default: master
+    description: 'The name of the main/protected branch'
 runs:
   using: 'node12'
   main: 'dist/index.js'

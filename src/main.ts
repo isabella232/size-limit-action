@@ -1,5 +1,12 @@
+import path from "path";
+import { promises as fs } from "fs";
+
 import { getInput, setFailed } from "@actions/core";
 import { context, GitHub } from "@actions/github";
+import * as artifact from "@actions/artifact";
+// import {exec} from '@actions/exec';
+import * as glob from "@actions/glob";
+
 // @ts-ignore
 import table from "markdown-table";
 import Term from "./Term";
@@ -7,6 +14,8 @@ import SizeLimit from "./SizeLimit";
 
 const SIZE_LIMIT_URL = "https://github.com/ai/size-limit";
 const SIZE_LIMIT_HEADING = `## [size-limit](${SIZE_LIMIT_URL}) report`;
+const ARTIFACT_NAME = "size-limit-action";
+const RESULTS_FILE = "size-limit-results.json";
 
 async function fetchPreviousComment(
   octokit: GitHub,
@@ -33,8 +42,10 @@ async function run() {
   try {
     const { payload, repo } = context;
     const pr = payload.pull_request;
+    const mainBranch = getInput("main_branch");
+    const isMainBranch = context.ref.includes(mainBranch);
 
-    if (!pr) {
+    if (!isMainBranch && !pr) {
       throw new Error(
         "No PR found. Only pull_request workflows are supported."
       );
@@ -49,24 +60,48 @@ async function run() {
     const term = new Term();
     const limit = new SizeLimit();
 
+    let base;
+    let current;
+
+    if (isMainBranch) {
+      const { output: baseOutput } = await term.execSizeLimit(
+        context.ref,
+        null,
+        buildScript,
+        windowsVerbatimArguments
+      );
+      const resultsFilePath = path.resolve(__dirname, RESULTS_FILE);
+      const globber = await glob.create(RESULTS_FILE, {
+        followSymbolicLinks: false
+      });
+      const files = await globber.glob();
+
+      try {
+        base = limit.parseResults(baseOutput);
+      } catch (error) {
+        console.log(
+          "Error parsing size-limit output. The output should be a json."
+        );
+        throw error;
+      }
+
+      await fs.writeFile(resultsFilePath, base, "utf8");
+
+      const artifactClient = artifact.create();
+      await artifactClient.uploadArtifact(ARTIFACT_NAME, files, __dirname);
+
+      return;
+    }
+
     const { status, output } = await term.execSizeLimit(
       null,
       skipStep,
       buildScript,
       windowsVerbatimArguments
     );
-    const { output: baseOutput } = await term.execSizeLimit(
-      pr.base.ref,
-      skipStep,
-      buildScript,
-      windowsVerbatimArguments
-    );
-
-    let base;
-    let current;
 
     try {
-      base = limit.parseResults(baseOutput);
+      // base = limit.parseResults(baseOutput);
       current = limit.parseResults(output);
     } catch (error) {
       console.log(
