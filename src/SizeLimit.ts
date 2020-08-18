@@ -149,7 +149,7 @@ class SizeLimit {
       ? SizeLimit.SIZE_RESULTS_HEADER
       : SizeLimit.TIME_RESULTS_HEADER;
     const fields = names.map((name: string) => {
-      const baseResult = base[name] || EmptyResult;
+      const baseResult = base?.[name] || EmptyResult;
       const currentResult = current[name] || EmptyResult;
 
       console.log({ baseResult, currentResult });
