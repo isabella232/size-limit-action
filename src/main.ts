@@ -82,11 +82,12 @@ async function run() {
       }
 
       const resultsFilePath = path.resolve(__dirname, RESULTS_FILE);
+      await fs.writeFile(resultsFilePath, base, "utf8");
+
       const globber = await glob.create(RESULTS_FILE, {
         followSymbolicLinks: false
       });
       const files = await globber.glob();
-      await fs.writeFile(resultsFilePath, base, "utf8");
 
       const artifactClient = artifact.create();
       await artifactClient.uploadArtifact(ARTIFACT_NAME, files, __dirname);

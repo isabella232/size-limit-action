@@ -4104,11 +4104,11 @@ function run() {
                     throw error;
                 }
                 const resultsFilePath = path_1.default.resolve(__dirname, RESULTS_FILE);
+                yield fs_1.promises.writeFile(resultsFilePath, base, "utf8");
                 const globber = yield glob.create(RESULTS_FILE, {
                     followSymbolicLinks: false
                 });
                 const files = yield globber.glob();
-                yield fs_1.promises.writeFile(resultsFilePath, base, "utf8");
                 const artifactClient = artifact.create();
                 yield artifactClient.uploadArtifact(ARTIFACT_NAME, files, __dirname);
                 return;
