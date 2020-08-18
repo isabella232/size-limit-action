@@ -4,7 +4,7 @@ import { promises as fs } from "fs";
 import { getInput, setFailed } from "@actions/core";
 import { context, GitHub } from "@actions/github";
 import * as artifact from "@actions/artifact";
-// import {exec} from '@actions/exec';
+import { exec } from "@actions/exec";
 import * as glob from "@actions/glob";
 
 // @ts-ignore
@@ -82,6 +82,8 @@ async function run() {
       }
 
       const resultsFilePath = path.resolve(__dirname, RESULTS_FILE);
+      await exec("pwd");
+      await exec("ls");
       await fs.writeFile(resultsFilePath, base, "utf8");
 
       const globber = await glob.create(RESULTS_FILE, {

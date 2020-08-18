@@ -4054,7 +4054,7 @@ const fs_1 = __webpack_require__(747);
 const core_1 = __webpack_require__(470);
 const github_1 = __webpack_require__(469);
 const artifact = __importStar(__webpack_require__(214));
-// import {exec} from '@actions/exec';
+const exec_1 = __webpack_require__(986);
 const glob = __importStar(__webpack_require__(281));
 // @ts-ignore
 const markdown_table_1 = __importDefault(__webpack_require__(366));
@@ -4104,6 +4104,8 @@ function run() {
                     throw error;
                 }
                 const resultsFilePath = path_1.default.resolve(__dirname, RESULTS_FILE);
+                yield exec_1.exec("pwd");
+                yield exec_1.exec("ls");
                 yield fs_1.promises.writeFile(resultsFilePath, base, "utf8");
                 const globber = yield glob.create(RESULTS_FILE, {
                     followSymbolicLinks: false
