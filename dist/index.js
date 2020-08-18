@@ -4106,7 +4106,9 @@ function run() {
                 const resultsFilePath = path_1.default.resolve(__dirname, RESULTS_FILE);
                 yield exec_1.exec("pwd");
                 yield exec_1.exec("ls");
+                console.log(base);
                 yield fs_1.promises.writeFile(resultsFilePath, base, "utf8");
+                yield exec_1.exec("ls");
                 const globber = yield glob.create(RESULTS_FILE, {
                     followSymbolicLinks: false
                 });
