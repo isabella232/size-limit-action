@@ -60,6 +60,8 @@ async function run() {
       getInput("windows_verbatim_arguments") === "true" ? true : false;
 
     const octokit = new Octokit();
+    // const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN })
+
     const term = new Term();
     const limit = new SizeLimit();
     const artifactClient = artifact.create();
@@ -104,12 +106,34 @@ async function run() {
     let current;
 
     console.log(
+      await octokit.request(
+        "GET /repos/:owner/:repo/actions/workflows/:workflow_file_name",
+        {
+          ...repo,
+          // eslint-disable-next-line camelcase
+          workflow_file_name: `${process.env.GITHUB_WORKFLOW}.yml`,
+          branch: mainBranch,
+          // eslint-disable-next-line camelcase
+          per_page: 100
+        }
+      ),
       // @ts-ignore
       await octokit.actions.listWorkflowRuns({
         ...repo,
         // Below is typed incorrectly, it needs to be a string but typed as number
         // eslint-disable-next-line camelcase
         workflow_file_name: `${process.env.GITHUB_WORKFLOW}.yml`,
+        branch: mainBranch,
+        // eslint-disable-next-line camelcase
+        per_page: 100
+      }),
+      // @ts-ignore
+      await octokit.actions.listWorkflowRuns({
+        ...repo,
+        // Below is typed incorrectly, it needs to be a string but typed as number
+        // @ts-ignore
+        // eslint-disable-next-line camelcase
+        workflow_id: `${process.env.GITHUB_WORKFLOW}.yml`,
         branch: mainBranch,
         // eslint-disable-next-line camelcase
         per_page: 100

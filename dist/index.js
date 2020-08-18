@@ -4156,6 +4156,7 @@ function run() {
             const buildScript = core_1.getInput("build_script");
             const windowsVerbatimArguments = core_1.getInput("windows_verbatim_arguments") === "true" ? true : false;
             const octokit = new action_1.Octokit();
+            // const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN })
             const term = new Term_1.default();
             const limit = new SizeLimit_1.default();
             const artifactClient = artifact.create();
@@ -4187,12 +4188,24 @@ function run() {
             }
             let base;
             let current;
-            console.log(
+            console.log(yield octokit.request("GET /repos/:owner/:repo/actions/workflows/:workflow_file_name", Object.assign(Object.assign({}, repo), { 
+                // eslint-disable-next-line camelcase
+                workflow_file_name: `${process.env.GITHUB_WORKFLOW}.yml`, branch: mainBranch, 
+                // eslint-disable-next-line camelcase
+                per_page: 100 })), 
             // @ts-ignore
             yield octokit.actions.listWorkflowRuns(Object.assign(Object.assign({}, repo), { 
                 // Below is typed incorrectly, it needs to be a string but typed as number
                 // eslint-disable-next-line camelcase
                 workflow_file_name: `${process.env.GITHUB_WORKFLOW}.yml`, branch: mainBranch, 
+                // eslint-disable-next-line camelcase
+                per_page: 100 })), 
+            // @ts-ignore
+            yield octokit.actions.listWorkflowRuns(Object.assign(Object.assign({}, repo), { 
+                // Below is typed incorrectly, it needs to be a string but typed as number
+                // @ts-ignore
+                // eslint-disable-next-line camelcase
+                workflow_id: `${process.env.GITHUB_WORKFLOW}.yml`, branch: mainBranch, 
                 // eslint-disable-next-line camelcase
                 per_page: 100 })));
             console.log(Object.assign({ workflowId: `${process.env.GITHUB_WORKFLOW}.yml`, downloadPath: __dirname, artifactName: ARTIFACT_NAME, branch: mainBranch }, repo));
