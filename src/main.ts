@@ -65,7 +65,7 @@ async function run() {
 
     if (isMainBranch) {
       const { output: baseOutput } = await term.execSizeLimit(
-        context.ref,
+        null,
         null,
         buildScript,
         windowsVerbatimArguments
@@ -82,17 +82,13 @@ async function run() {
       }
 
       const resultsFilePath = path.resolve(__dirname, RESULTS_FILE);
-      await exec("pwd");
-      await exec("ls");
       console.log(base, resultsFilePath);
       try {
         await fs.writeFile(resultsFilePath, base, "utf8");
       } catch (err) {
         console.error(err);
       }
-      await exec("ls");
-
-      const globber = await glob.create(RESULTS_FILE, {
+      const globber = await glob.create(resultsFilePath, {
         followSymbolicLinks: false
       });
       const files = await globber.glob();

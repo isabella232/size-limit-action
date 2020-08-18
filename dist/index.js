@@ -4054,7 +4054,6 @@ const fs_1 = __webpack_require__(747);
 const core_1 = __webpack_require__(470);
 const github_1 = __webpack_require__(469);
 const artifact = __importStar(__webpack_require__(214));
-const exec_1 = __webpack_require__(986);
 const glob = __importStar(__webpack_require__(281));
 // @ts-ignore
 const markdown_table_1 = __importDefault(__webpack_require__(366));
@@ -4094,7 +4093,7 @@ function run() {
             let base;
             let current;
             if (isMainBranch) {
-                const { output: baseOutput } = yield term.execSizeLimit(github_1.context.ref, null, buildScript, windowsVerbatimArguments);
+                const { output: baseOutput } = yield term.execSizeLimit(null, null, buildScript, windowsVerbatimArguments);
                 console.log(baseOutput);
                 try {
                     base = limit.parseResults(baseOutput);
@@ -4104,8 +4103,6 @@ function run() {
                     throw error;
                 }
                 const resultsFilePath = path_1.default.resolve(__dirname, RESULTS_FILE);
-                yield exec_1.exec("pwd");
-                yield exec_1.exec("ls");
                 console.log(base, resultsFilePath);
                 try {
                     yield fs_1.promises.writeFile(resultsFilePath, base, "utf8");
@@ -4113,8 +4110,7 @@ function run() {
                 catch (err) {
                     console.error(err);
                 }
-                yield exec_1.exec("ls");
-                const globber = yield glob.create(RESULTS_FILE, {
+                const globber = yield glob.create(resultsFilePath, {
                     followSymbolicLinks: false
                 });
                 const files = yield globber.glob();
