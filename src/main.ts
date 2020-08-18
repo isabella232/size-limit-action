@@ -59,11 +59,11 @@ async function run() {
     const octokit = new GitHub(token);
     const term = new Term();
     const limit = new SizeLimit();
-
-    let base;
-    let current;
+    const artifactClient = artifact.create();
+    const resultsFilePath = path.resolve(__dirname, RESULTS_FILE);
 
     if (isMainBranch) {
+      let base;
       const { output: baseOutput } = await term.execSizeLimit(
         null,
         null,
@@ -81,7 +81,6 @@ async function run() {
         throw error;
       }
 
-      const resultsFilePath = path.resolve(__dirname, RESULTS_FILE);
       console.log(base, resultsFilePath);
       try {
         await fs.writeFile(resultsFilePath, base, "utf8");
@@ -93,12 +92,13 @@ async function run() {
       });
       const files = await globber.glob();
 
-      const artifactClient = artifact.create();
       await artifactClient.uploadArtifact(ARTIFACT_NAME, files, __dirname);
 
       return;
     }
 
+    let base;
+    let current;
     const { status, output } = await term.execSizeLimit(
       null,
       skipStep,
@@ -106,9 +106,13 @@ async function run() {
       windowsVerbatimArguments
     );
 
+    await artifactClient.downloadArtifact(ARTIFACT_NAME, __dirname);
+
     try {
-      // base = limit.parseResults(baseOutput);
       current = limit.parseResults(output);
+      base = JSON.parse(
+        await fs.readFile(resultsFilePath, { encoding: "utf8" })
+      );
     } catch (error) {
       console.log(
         "Error parsing size-limit output. The output should be a json."

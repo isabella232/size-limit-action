@@ -4090,9 +4090,10 @@ function run() {
             const octokit = new github_1.GitHub(token);
             const term = new Term_1.default();
             const limit = new SizeLimit_1.default();
-            let base;
-            let current;
+            const artifactClient = artifact.create();
+            const resultsFilePath = path_1.default.resolve(__dirname, RESULTS_FILE);
             if (isMainBranch) {
+                let base;
                 const { output: baseOutput } = yield term.execSizeLimit(null, null, buildScript, windowsVerbatimArguments);
                 console.log(baseOutput);
                 try {
@@ -4102,7 +4103,6 @@ function run() {
                     console.log("Error parsing size-limit output. The output should be a json.");
                     throw error;
                 }
-                const resultsFilePath = path_1.default.resolve(__dirname, RESULTS_FILE);
                 console.log(base, resultsFilePath);
                 try {
                     yield fs_1.promises.writeFile(resultsFilePath, base, "utf8");
@@ -4114,14 +4114,16 @@ function run() {
                     followSymbolicLinks: false
                 });
                 const files = yield globber.glob();
-                const artifactClient = artifact.create();
                 yield artifactClient.uploadArtifact(ARTIFACT_NAME, files, __dirname);
                 return;
             }
+            let base;
+            let current;
             const { status, output } = yield term.execSizeLimit(null, skipStep, buildScript, windowsVerbatimArguments);
+            yield artifactClient.downloadArtifact(ARTIFACT_NAME, __dirname);
             try {
-                // base = limit.parseResults(baseOutput);
                 current = limit.parseResults(output);
+                base = JSON.parse(yield fs_1.promises.readFile(resultsFilePath, { encoding: "utf8" }));
             }
             catch (error) {
                 console.log("Error parsing size-limit output. The output should be a json.");
