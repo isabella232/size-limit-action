@@ -2034,11 +2034,12 @@ function run() {
             const token = core_1.getInput("github_token");
             const skipStep = core_1.getInput("skip_step");
             const buildScript = core_1.getInput("build_script");
+            const windowsVerbatimArguments = core_1.getInput("windows_verbatim_arguments") === "true" ? true : false;
             const octokit = new github_1.GitHub(token);
             const term = new Term_1.default();
             const limit = new SizeLimit_1.default();
-            const { status, output } = yield term.execSizeLimit(null, skipStep, buildScript);
-            const { output: baseOutput } = yield term.execSizeLimit(pr.base.ref, null, buildScript);
+            const { status, output } = yield term.execSizeLimit(null, skipStep, buildScript, windowsVerbatimArguments);
+            const { output: baseOutput } = yield term.execSizeLimit(pr.base.ref, null, buildScript, windowsVerbatimArguments);
             let base;
             let current;
             try {
@@ -10475,7 +10476,7 @@ const has_yarn_1 = __importDefault(__webpack_require__(931));
 const INSTALL_STEP = "install";
 const BUILD_STEP = "build";
 class Term {
-    execSizeLimit(branch, skipStep, buildScript) {
+    execSizeLimit(branch, skipStep, buildScript, windowsVerbatimArguments) {
         return __awaiter(this, void 0, void 0, function* () {
             const manager = has_yarn_1.default() ? "yarn" : "npm";
             let output = "";
@@ -10497,7 +10498,7 @@ class Term {
             }
             const yarnOrNpx = manager === "yarn" ? "yarn" : "npx";
             const status = yield exec_1.exec(yarnOrNpx, ["size-limit", "--json"], {
-                windowsVerbatimArguments: true,
+                windowsVerbatimArguments,
                 ignoreReturnCode: true,
                 listeners: {
                     stdout: (data) => {
