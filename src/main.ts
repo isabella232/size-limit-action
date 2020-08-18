@@ -7,9 +7,9 @@ import * as artifact from "@actions/artifact";
 import { exec } from "@actions/exec";
 import * as glob from "@actions/glob";
 
+import { Octokit } from "@octokit/action";
 // @ts-ignore
 import table from "markdown-table";
-import fetchOtherArtifact from "github-fetch-workflow-artifact";
 
 import Term from "./Term";
 import SizeLimit from "./SizeLimit";
@@ -54,12 +54,12 @@ async function run() {
       );
     }
 
-    const token = getInput("github_token");
     const skipStep = getInput("skip_step");
     const buildScript = getInput("build_script");
     const windowsVerbatimArguments =
       getInput("windows_verbatim_arguments") === "true" ? true : false;
-    const octokit = new GitHub(token);
+
+    const octokit = new Octokit();
     const term = new Term();
     const limit = new SizeLimit();
     const artifactClient = artifact.create();
@@ -104,12 +104,14 @@ async function run() {
     let current;
 
     console.log(
+      // @ts-ignore
       await octokit.actions.listWorkflowRuns({
         ...repo,
         // Below is typed incorrectly, it needs to be a string but typed as number
-        // @ts-ignore
-        workflow_id: `${process.env.GITHUB_WORKFLOW}.yml`,
+        // eslint-disable-next-line camelcase
+        workflow_file_name: `${process.env.GITHUB_WORKFLOW}.yml`,
         branch: mainBranch,
+        // eslint-disable-next-line camelcase
         per_page: 100
       })
     );
@@ -155,6 +157,7 @@ async function run() {
       table(limit.formatResults(base, current))
     ].join("\r\n");
 
+    // @ts-ignore
     const sizeLimitComment = await fetchPreviousComment(octokit, repo, pr);
 
     if (!sizeLimitComment) {
