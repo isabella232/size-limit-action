@@ -3217,16 +3217,21 @@ function run() {
             }
             let base;
             let current;
-            // @ts-ignore
-            yield github_fetch_workflow_artifact_1.default(octokit, Object.assign(Object.assign({}, repo), { artifactName: ARTIFACT_NAME, branch: mainBranch, downloadPath: __dirname, 
-                // eslint-disable-next-line camelcase
-                workflow_id: `${process.env.GITHUB_WORKFLOW}.yml` }));
+            try {
+                // Ignore failures here as it is likely that this only happens when introducing size-limit
+                // and this has not been run on the main branch yet
+                yield github_fetch_workflow_artifact_1.default(octokit, Object.assign(Object.assign({}, repo), { artifactName: ARTIFACT_NAME, branch: mainBranch, downloadPath: __dirname, 
+                    // eslint-disable-next-line camelcase
+                    workflow_id: `${process.env.GITHUB_WORKFLOW}.yml` }));
+                base = JSON.parse(yield fs_1.promises.readFile(resultsFilePath, { encoding: "utf8" }));
+            }
+            catch (error) {
+                console.log("Warning, unable to find base results");
+                console.log(error);
+            }
             const { status, output } = yield term.execSizeLimit(skipStep, buildScript, windowsVerbatimArguments);
             try {
                 current = limit.parseResults(output);
-                // base = JSON.parse(
-                //   await fs.readFile(resultsFilePath, { encoding: "utf8" })
-                // );
             }
             catch (error) {
                 console.log("Error parsing size-limit output. The output should be a json.");
@@ -13696,7 +13701,6 @@ class SizeLimit {
         const fields = names.map((name) => {
             const baseResult = (base === null || base === void 0 ? void 0 : base[name]) || EmptyResult;
             const currentResult = current[name] || EmptyResult;
-            console.log({ baseResult, currentResult });
             if (isSize) {
                 return this.formatSizeResult(name, baseResult, currentResult);
             }
@@ -15294,7 +15298,6 @@ class Term {
                     }
                 }
             });
-            console.log(output);
             return {
                 status,
                 output

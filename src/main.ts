@@ -95,23 +95,18 @@ async function run() {
     let base;
     let current;
 
-    // @ts-ignore
-    await download(octokit, {
-      ...repo,
-      artifactName: ARTIFACT_NAME,
-      branch: mainBranch,
-      downloadPath: __dirname,
-
-      // eslint-disable-next-line camelcase
-      workflow_id: `${process.env.GITHUB_WORKFLOW}.yml`
-    });
-
-    const { status, output } = await term.execSizeLimit(
-      skipStep,
-      buildScript,
-      windowsVerbatimArguments
-    );
     try {
+      // Ignore failures here as it is likely that this only happens when introducing size-limit
+      // and this has not been run on the main branch yet
+      await download(octokit, {
+        ...repo,
+        artifactName: ARTIFACT_NAME,
+        branch: mainBranch,
+        downloadPath: __dirname,
+
+        // eslint-disable-next-line camelcase
+        workflow_id: `${process.env.GITHUB_WORKFLOW}.yml`
+      });
       base = JSON.parse(
         await fs.readFile(resultsFilePath, { encoding: "utf8" })
       );
@@ -120,6 +115,11 @@ async function run() {
       console.log(error);
     }
 
+    const { status, output } = await term.execSizeLimit(
+      skipStep,
+      buildScript,
+      windowsVerbatimArguments
+    );
     try {
       current = limit.parseResults(output);
     } catch (error) {
