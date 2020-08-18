@@ -35,7 +35,8 @@ class Term {
 
     const yarnOrNpx = manager === "yarn" ? "yarn" : "npx";
 
-    const status = await exec(yarnOrNpx, ["size-limit", "--json"], {
+    await exec("ls node_modules/.bin");
+    const status = await exec(yarnOrNpx, ["run", "size-limit", "--json"], {
       windowsVerbatimArguments,
       ignoreReturnCode: true,
       listeners: {
