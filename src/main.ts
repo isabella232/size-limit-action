@@ -21,7 +21,7 @@ const ARTIFACT_NAME = "size-limit-action";
 const RESULTS_FILE = "size-limit-results.json";
 
 async function fetchPreviousComment(
-  octokit: GitHub,
+  octokit: InstanceType<typeof GitHub>,
   repo: { owner: string; repo: string },
   pr: { number: number }
 ) {
@@ -148,6 +148,7 @@ async function run() {
       // eslint-disable-next-line camelcase
       workflow_id: `${process.env.GITHUB_WORKFLOW}.yml`
     });
+    console.log(await fs.readFile(resultsFilePath, { encoding: "utf8" }));
 
     const { status, output } = await term.execSizeLimit(
       null,

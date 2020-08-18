@@ -4208,6 +4208,7 @@ function run() {
             yield github_fetch_workflow_artifact_1.default(octokit, Object.assign(Object.assign({}, repo), { artifactName: ARTIFACT_NAME, branch: mainBranch, downloadPath: __dirname, 
                 // eslint-disable-next-line camelcase
                 workflow_id: `${process.env.GITHUB_WORKFLOW}.yml` }));
+            console.log(yield fs_1.promises.readFile(resultsFilePath, { encoding: "utf8" }));
             const { status, output } = yield term.execSizeLimit(null, skipStep, buildScript, windowsVerbatimArguments);
             try {
                 current = limit.parseResults(output);
