@@ -4155,8 +4155,8 @@ function run() {
             const skipStep = core_1.getInput("skip_step");
             const buildScript = core_1.getInput("build_script");
             const windowsVerbatimArguments = core_1.getInput("windows_verbatim_arguments") === "true" ? true : false;
-            const octokit = new action_1.Octokit();
-            // const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN })
+            const githubToken = core_1.getInput("github_token");
+            const octokit = new action_1.Octokit({ auth: githubToken });
             const term = new Term_1.default();
             const limit = new SizeLimit_1.default();
             const artifactClient = artifact.create();
@@ -4186,13 +4186,15 @@ function run() {
                 yield artifactClient.uploadArtifact(ARTIFACT_NAME, files, __dirname);
                 return;
             }
+            console.log("hi");
             let base;
             let current;
             console.log(yield octokit.request("GET /repos/:owner/:repo/actions/workflows/:workflow_file_name", Object.assign(Object.assign({}, repo), { 
                 // eslint-disable-next-line camelcase
                 workflow_file_name: `${process.env.GITHUB_WORKFLOW}.yml`, branch: mainBranch, 
                 // eslint-disable-next-line camelcase
-                per_page: 100 })), 
+                per_page: 100 })));
+            console.log(
             // @ts-ignore
             yield octokit.actions.listWorkflowRuns(Object.assign(Object.assign({}, repo), { 
                 // Below is typed incorrectly, it needs to be a string but typed as number

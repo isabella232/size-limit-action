@@ -58,10 +58,8 @@ async function run() {
     const buildScript = getInput("build_script");
     const windowsVerbatimArguments =
       getInput("windows_verbatim_arguments") === "true" ? true : false;
-
-    const octokit = new Octokit();
-    // const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN })
-
+    const githubToken = getInput("github_token");
+    const octokit = new Octokit({ auth: githubToken });
     const term = new Term();
     const limit = new SizeLimit();
     const artifactClient = artifact.create();
@@ -102,6 +100,7 @@ async function run() {
       return;
     }
 
+    console.log("hi");
     let base;
     let current;
 
@@ -116,7 +115,9 @@ async function run() {
           // eslint-disable-next-line camelcase
           per_page: 100
         }
-      ),
+      )
+    );
+    console.log(
       // @ts-ignore
       await octokit.actions.listWorkflowRuns({
         ...repo,
