@@ -4189,19 +4189,12 @@ function run() {
             console.log("hi");
             let base;
             let current;
-            console.log(yield octokit.request("GET /repos/:owner/:repo/actions/workflows/:workflow_file_name", Object.assign(Object.assign({}, repo), { 
+            console.log(yield octokit.request(`GET /repos/:owner/:repo/actions/workflows/:workflow_file_name/runs?per_page=:per_page&branch=:branch`, Object.assign(Object.assign({}, repo), { 
                 // eslint-disable-next-line camelcase
                 workflow_file_name: `${process.env.GITHUB_WORKFLOW}.yml`, branch: mainBranch, 
                 // eslint-disable-next-line camelcase
                 per_page: 100 })));
             console.log(
-            // @ts-ignore
-            yield octokit.actions.listWorkflowRuns(Object.assign(Object.assign({}, repo), { 
-                // Below is typed incorrectly, it needs to be a string but typed as number
-                // eslint-disable-next-line camelcase
-                workflow_file_name: `${process.env.GITHUB_WORKFLOW}.yml`, branch: mainBranch, 
-                // eslint-disable-next-line camelcase
-                per_page: 100 })), 
             // @ts-ignore
             yield octokit.actions.listWorkflowRuns(Object.assign(Object.assign({}, repo), { 
                 // Below is typed incorrectly, it needs to be a string but typed as number
