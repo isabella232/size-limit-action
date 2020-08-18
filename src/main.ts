@@ -112,10 +112,16 @@ async function run() {
       windowsVerbatimArguments
     );
     try {
+      base = JSON.parse(
+        await fs.readFile(resultsFilePath, { encoding: "utf8" })
+      );
+    } catch (error) {
+      console.log("Warning, unable to find base results");
+      console.log(error);
+    }
+
+    try {
       current = limit.parseResults(output);
-      // base = JSON.parse(
-      //   await fs.readFile(resultsFilePath, { encoding: "utf8" })
-      // );
     } catch (error) {
       console.log(
         "Error parsing size-limit output. The output should be a json."

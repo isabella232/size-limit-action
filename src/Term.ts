@@ -32,7 +32,6 @@ class Term {
       }
     });
 
-    console.log(output);
     return {
       status,
       output
