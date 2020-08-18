@@ -4095,11 +4095,7 @@ function run() {
             let current;
             if (isMainBranch) {
                 const { output: baseOutput } = yield term.execSizeLimit(github_1.context.ref, null, buildScript, windowsVerbatimArguments);
-                const resultsFilePath = path_1.default.resolve(__dirname, RESULTS_FILE);
-                const globber = yield glob.create(RESULTS_FILE, {
-                    followSymbolicLinks: false
-                });
-                const files = yield globber.glob();
+                console.log(baseOutput);
                 try {
                     base = limit.parseResults(baseOutput);
                 }
@@ -4107,6 +4103,11 @@ function run() {
                     console.log("Error parsing size-limit output. The output should be a json.");
                     throw error;
                 }
+                const resultsFilePath = path_1.default.resolve(__dirname, RESULTS_FILE);
+                const globber = yield glob.create(RESULTS_FILE, {
+                    followSymbolicLinks: false
+                });
+                const files = yield globber.glob();
                 yield fs_1.promises.writeFile(resultsFilePath, base, "utf8");
                 const artifactClient = artifact.create();
                 yield artifactClient.uploadArtifact(ARTIFACT_NAME, files, __dirname);
@@ -15775,8 +15776,7 @@ class Term {
                 const script = buildScript || "build";
                 yield exec_1.exec(`${manager} run ${script}`);
             }
-            const yarnOrNpx = manager === "yarn" ? "yarn" : "npx";
-            const status = yield exec_1.exec(yarnOrNpx, ["size-limit", "--json"], {
+            const status = yield exec_1.exec("npx", ["size-limit", "--json"], {
                 windowsVerbatimArguments,
                 ignoreReturnCode: true,
                 listeners: {

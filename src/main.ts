@@ -70,12 +70,8 @@ async function run() {
         buildScript,
         windowsVerbatimArguments
       );
-      const resultsFilePath = path.resolve(__dirname, RESULTS_FILE);
-      const globber = await glob.create(RESULTS_FILE, {
-        followSymbolicLinks: false
-      });
-      const files = await globber.glob();
 
+      console.log(baseOutput);
       try {
         base = limit.parseResults(baseOutput);
       } catch (error) {
@@ -85,6 +81,11 @@ async function run() {
         throw error;
       }
 
+      const resultsFilePath = path.resolve(__dirname, RESULTS_FILE);
+      const globber = await glob.create(RESULTS_FILE, {
+        followSymbolicLinks: false
+      });
+      const files = await globber.glob();
       await fs.writeFile(resultsFilePath, base, "utf8");
 
       const artifactClient = artifact.create();
