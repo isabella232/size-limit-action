@@ -10498,7 +10498,7 @@ class Term {
             }
             const yarnOrNpx = manager === "yarn" ? "yarn" : "npx";
             const status = yield exec_1.exec(yarnOrNpx, ["size-limit", "--json"], {
-                windowsVerbatimArguments: true,
+                windowsVerbatimArguments,
                 ignoreReturnCode: true,
                 listeners: {
                     stdout: (data) => {
