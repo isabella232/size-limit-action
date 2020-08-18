@@ -2039,7 +2039,7 @@ function run() {
             const term = new Term_1.default();
             const limit = new SizeLimit_1.default();
             const { status, output } = yield term.execSizeLimit(null, skipStep, buildScript, windowsVerbatimArguments);
-            const { output: baseOutput } = yield term.execSizeLimit(pr.base.ref, null, buildScript, windowsVerbatimArguments);
+            const { output: baseOutput } = yield term.execSizeLimit(pr.base.ref, skipStep, buildScript, windowsVerbatimArguments);
             let base;
             let current;
             try {
