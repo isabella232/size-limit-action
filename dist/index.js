@@ -10480,6 +10480,8 @@ class Term {
         return __awaiter(this, void 0, void 0, function* () {
             const manager = has_yarn_1.default() ? "yarn" : "npm";
             let output = "";
+            yield exec_1.exec("pwd");
+            yield exec_1.exec("ls");
             if (branch) {
                 try {
                     yield exec_1.exec(`git fetch origin ${branch} --depth=1`);
@@ -10497,6 +10499,8 @@ class Term {
                 yield exec_1.exec(`${manager} run ${script}`);
             }
             const yarnOrNpx = manager === "yarn" ? "yarn" : "npx";
+            yield exec_1.exec("pwd");
+            yield exec_1.exec("ls");
             yield exec_1.exec("ls node_modules/.bin");
             const status = yield exec_1.exec(yarnOrNpx, ["run", "size-limit", "--json"], {
                 windowsVerbatimArguments,

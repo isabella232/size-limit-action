@@ -14,6 +14,9 @@ class Term {
     const manager = hasYarn() ? "yarn" : "npm";
     let output = "";
 
+    await exec("pwd");
+    await exec("ls");
+
     if (branch) {
       try {
         await exec(`git fetch origin ${branch} --depth=1`);
@@ -35,6 +38,8 @@ class Term {
 
     const yarnOrNpx = manager === "yarn" ? "yarn" : "npx";
 
+    await exec("pwd");
+    await exec("ls");
     await exec("ls node_modules/.bin");
     const status = await exec(yarnOrNpx, ["run", "size-limit", "--json"], {
       windowsVerbatimArguments,
