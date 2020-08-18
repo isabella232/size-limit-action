@@ -2,12 +2,11 @@ import path from "path";
 import { promises as fs } from "fs";
 
 import { getInput, setFailed } from "@actions/core";
-import { context, GitHub } from "@actions/github";
+import { context, getOctokit } from "@actions/github";
 import * as artifact from "@actions/artifact";
 import { exec } from "@actions/exec";
 import * as glob from "@actions/glob";
 
-import { Octokit } from "@octokit/action";
 // @ts-ignore
 import table from "markdown-table";
 
@@ -21,19 +20,16 @@ const ARTIFACT_NAME = "size-limit-action";
 const RESULTS_FILE = "size-limit-results.json";
 
 async function fetchPreviousComment(
-  octokit: InstanceType<typeof GitHub>,
+  octokit: ReturnType<typeof getOctokit>,
   repo: { owner: string; repo: string },
   pr: { number: number }
 ) {
   // TODO: replace with octokit.issues.listComments when upgraded to v17
-  const commentList = await octokit.paginate(
-    "GET /repos/:owner/:repo/issues/:issue_number/comments",
-    {
-      ...repo,
-      // eslint-disable-next-line camelcase
-      issue_number: pr.number
-    }
-  );
+  const { data: commentList } = await octokit.issues.listComments({
+    ...repo,
+    // eslint-disable-next-line camelcase
+    issue_number: pr.number
+  });
 
   const sizeLimitComment = commentList.find(comment =>
     comment.body.startsWith(SIZE_LIMIT_HEADING)
@@ -59,7 +55,7 @@ async function run() {
     const windowsVerbatimArguments =
       getInput("windows_verbatim_arguments") === "true" ? true : false;
     const githubToken = getInput("github_token");
-    const octokit = new Octokit({ auth: githubToken });
+    const octokit = getOctokit(githubToken);
     const term = new Term();
     const limit = new SizeLimit();
     const artifactClient = artifact.create();
@@ -74,7 +70,6 @@ async function run() {
         windowsVerbatimArguments
       );
 
-      console.log(baseOutput);
       try {
         base = limit.parseResults(baseOutput);
       } catch (error) {
@@ -84,9 +79,8 @@ async function run() {
         throw error;
       }
 
-      console.log(base, resultsFilePath);
       try {
-        await fs.writeFile(resultsFilePath, base, "utf8");
+        await fs.writeFile(resultsFilePath, JSON.stringify(base), "utf8");
       } catch (err) {
         console.error(err);
       }
@@ -100,44 +94,9 @@ async function run() {
       return;
     }
 
-    console.log("hi");
     let base;
     let current;
 
-    console.log(
-      await octokit.request(
-        `GET /repos/:owner/:repo/actions/workflows/:workflow_file_name/runs?per_page=:per_page&branch=:branch`,
-        {
-          ...repo,
-          // eslint-disable-next-line camelcase
-          workflow_file_name: `${process.env.GITHUB_WORKFLOW}.yml`,
-          branch: mainBranch,
-          // eslint-disable-next-line camelcase
-          per_page: 100
-        }
-      )
-    );
-    console.log(
-      // @ts-ignore
-      await octokit.actions.listWorkflowRuns({
-        ...repo,
-        // Below is typed incorrectly, it needs to be a string but typed as number
-        // @ts-ignore
-        // eslint-disable-next-line camelcase
-        workflow_id: `${process.env.GITHUB_WORKFLOW}.yml`,
-        branch: mainBranch,
-        // eslint-disable-next-line camelcase
-        per_page: 100
-      })
-    );
-
-    console.log({
-      workflowId: `${process.env.GITHUB_WORKFLOW}.yml`,
-      downloadPath: __dirname,
-      artifactName: ARTIFACT_NAME,
-      branch: mainBranch,
-      ...repo
-    });
     // @ts-ignore
     await download(octokit, {
       ...repo,
