@@ -4,7 +4,6 @@ import { promises as fs } from "fs";
 import { getInput, setFailed } from "@actions/core";
 import { context, getOctokit } from "@actions/github";
 import * as artifact from "@actions/artifact";
-import { exec } from "@actions/exec";
 import * as glob from "@actions/glob";
 
 // @ts-ignore
@@ -65,7 +64,6 @@ async function run() {
       let base;
       const { output: baseOutput } = await term.execSizeLimit(
         null,
-        null,
         buildScript,
         windowsVerbatimArguments
       );
@@ -109,7 +107,6 @@ async function run() {
     });
 
     const { status, output } = await term.execSizeLimit(
-      null,
       skipStep,
       buildScript,
       windowsVerbatimArguments
@@ -166,6 +163,7 @@ async function run() {
       setFailed("Size limit has been exceeded.");
     }
   } catch (error) {
+    console.error(error);
     setFailed(error.message);
   }
 }

@@ -3194,7 +3194,7 @@ function run() {
             const resultsFilePath = path_1.default.resolve(__dirname, RESULTS_FILE);
             if (isMainBranch) {
                 let base;
-                const { output: baseOutput } = yield term.execSizeLimit(null, null, buildScript, windowsVerbatimArguments);
+                const { output: baseOutput } = yield term.execSizeLimit(null, buildScript, windowsVerbatimArguments);
                 try {
                     base = limit.parseResults(baseOutput);
                 }
@@ -3221,7 +3221,7 @@ function run() {
             yield github_fetch_workflow_artifact_1.default(octokit, Object.assign(Object.assign({}, repo), { artifactName: ARTIFACT_NAME, branch: mainBranch, downloadPath: __dirname, 
                 // eslint-disable-next-line camelcase
                 workflow_id: `${process.env.GITHUB_WORKFLOW}.yml` }));
-            const { status, output } = yield term.execSizeLimit(null, skipStep, buildScript, windowsVerbatimArguments);
+            const { status, output } = yield term.execSizeLimit(skipStep, buildScript, windowsVerbatimArguments);
             try {
                 current = limit.parseResults(output);
                 // base = JSON.parse(
@@ -3263,6 +3263,7 @@ function run() {
             }
         }
         catch (error) {
+            console.error(error);
             core_1.setFailed(error.message);
         }
     });
@@ -13695,6 +13696,7 @@ class SizeLimit {
         const fields = names.map((name) => {
             const baseResult = base[name] || EmptyResult;
             const currentResult = current[name] || EmptyResult;
+            console.log({ baseResult, currentResult });
             if (isSize) {
                 return this.formatSizeResult(name, baseResult, currentResult);
             }
@@ -15272,19 +15274,10 @@ const has_yarn_1 = __importDefault(__webpack_require__(931));
 const INSTALL_STEP = "install";
 const BUILD_STEP = "build";
 class Term {
-    execSizeLimit(branch, skipStep, buildScript, windowsVerbatimArguments) {
+    execSizeLimit(skipStep, buildScript, windowsVerbatimArguments) {
         return __awaiter(this, void 0, void 0, function* () {
             const manager = has_yarn_1.default() ? "yarn" : "npm";
             let output = "";
-            if (branch) {
-                try {
-                    yield exec_1.exec(`git fetch origin ${branch} --depth=1`);
-                }
-                catch (error) {
-                    console.log("Fetch failed", error.message);
-                }
-                yield exec_1.exec(`git checkout -f ${branch}`);
-            }
             if (skipStep !== INSTALL_STEP && skipStep !== BUILD_STEP) {
                 yield exec_1.exec(`${manager} install`);
             }

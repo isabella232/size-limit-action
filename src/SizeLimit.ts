@@ -152,6 +152,7 @@ class SizeLimit {
       const baseResult = base[name] || EmptyResult;
       const currentResult = current[name] || EmptyResult;
 
+      console.log({ baseResult, currentResult });
       if (isSize) {
         return this.formatSizeResult(name, baseResult, currentResult);
       }
