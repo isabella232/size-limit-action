@@ -4187,12 +4187,18 @@ function run() {
             }
             let base;
             let current;
-            const { status, output } = yield term.execSizeLimit(null, skipStep, buildScript, windowsVerbatimArguments);
+            console.log(yield octokit.actions.listWorkflowRuns(Object.assign(Object.assign({}, repo), { 
+                // Below is typed incorrectly, it needs to be a string but typed as number
+                // @ts-ignore
+                workflow_id: `${process.env.GITHUB_WORKFLOW}.yml`, branch: mainBranch, 
+                // @ts-ignore
+                per_page: 100 })));
             console.log(Object.assign({ workflowId: `${process.env.GITHUB_WORKFLOW}.yml`, downloadPath: __dirname, artifactName: ARTIFACT_NAME, branch: mainBranch }, repo));
             // @ts-ignore
             yield github_fetch_workflow_artifact_1.default(octokit, Object.assign(Object.assign({}, repo), { artifactName: ARTIFACT_NAME, branch: mainBranch, downloadPath: __dirname, 
                 // eslint-disable-next-line camelcase
                 workflow_id: `${process.env.GITHUB_WORKFLOW}.yml` }));
+            const { status, output } = yield term.execSizeLimit(null, skipStep, buildScript, windowsVerbatimArguments);
             try {
                 current = limit.parseResults(output);
                 base = JSON.parse(yield fs_1.promises.readFile(resultsFilePath, { encoding: "utf8" }));

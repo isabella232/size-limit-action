@@ -102,11 +102,16 @@ async function run() {
 
     let base;
     let current;
-    const { status, output } = await term.execSizeLimit(
-      null,
-      skipStep,
-      buildScript,
-      windowsVerbatimArguments
+
+    console.log(
+      await octokit.actions.listWorkflowRuns({
+        ...repo,
+        // Below is typed incorrectly, it needs to be a string but typed as number
+        // @ts-ignore
+        workflow_id: `${process.env.GITHUB_WORKFLOW}.yml`,
+        branch: mainBranch,
+        per_page: 100
+      })
     );
 
     console.log({
@@ -127,6 +132,12 @@ async function run() {
       workflow_id: `${process.env.GITHUB_WORKFLOW}.yml`
     });
 
+    const { status, output } = await term.execSizeLimit(
+      null,
+      skipStep,
+      buildScript,
+      windowsVerbatimArguments
+    );
     try {
       current = limit.parseResults(output);
       base = JSON.parse(
