@@ -13690,7 +13690,7 @@ class SizeLimit {
     formatResults(base, current) {
         const names = [
             ...new Set([
-                ...(base ? [Object.keys(base)] : []),
+                ...(base ? Object.keys(base) : []),
                 ...Object.keys(current)
             ])
         ];
@@ -15289,7 +15289,7 @@ class Term {
                 const script = buildScript || "build";
                 yield exec_1.exec(`${manager} run ${script}`);
             }
-            const status = yield exec_1.exec("npx", ["size-limit", "--json"], {
+            const status = yield exec_1.exec("npx size-limit --json", [], {
                 windowsVerbatimArguments,
                 ignoreReturnCode: true,
                 listeners: {
