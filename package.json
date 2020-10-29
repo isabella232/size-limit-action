@@ -20,16 +20,19 @@
     }
   ],
   "dependencies": {
+    "@actions/artifact": "^0.4.0",
     "@actions/core": "^1.2.6",
     "@actions/exec": "^1.0.3",
-    "@actions/github": "^2.1.1",
+    "@actions/github": "^4.0.0",
+    "@actions/glob": "^0.1.0",
     "bytes": "^3.1.0",
+    "github-fetch-workflow-artifact": "^1.0.3",
     "has-yarn": "^2.1.0",
     "markdown-table": "^2.0.0"
   },
   "devDependencies": {
-    "@size-limit/file": "^4.3.1",
-    "@size-limit/time": "^4.3.1",
+    "@size-limit/file": "^4.6.0",
+    "@size-limit/time": "^4.6.0",
     "@types/jest": "^24.0.23",
     "@types/node": "^12.7.12",
     "@typescript-eslint/parser": "^2.8.0",
@@ -41,7 +44,7 @@
     "jest-circus": "^24.9.0",
     "js-yaml": "^3.13.1",
     "prettier": "^1.19.1",
-    "size-limit": "^4.3.1",
+    "size-limit": "^4.6.0",
     "ts-jest": "^24.2.0",
     "typescript": "^3.6.4"
   }
