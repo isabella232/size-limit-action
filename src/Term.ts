@@ -8,7 +8,9 @@ class Term {
   async execSizeLimit(
     branch?: string,
     skipStep?: string,
-    buildScript?: string
+    buildScript?: string,
+    windowsVerbatimArguments?: boolean,
+    directory?: string
   ): Promise<{ status: number; output: string }> {
     const manager = hasYarn() ? "yarn" : "npm";
     let output = "";
@@ -24,22 +26,27 @@ class Term {
     }
 
     if (skipStep !== INSTALL_STEP && skipStep !== BUILD_STEP) {
-      await exec(`${manager} install`);
+      await exec(`${manager} install`, [], {
+        cwd: directory
+      });
     }
 
     if (skipStep !== BUILD_STEP) {
       const script = buildScript || "build";
-      await exec(`${manager} run ${script}`);
+      await exec(`${manager} run ${script}`, [], {
+        cwd: directory
+      });
     }
 
     const status = await exec("npx size-limit --json", [], {
-      windowsVerbatimArguments: true,
+      windowsVerbatimArguments,
       ignoreReturnCode: true,
       listeners: {
         stdout: (data: Buffer) => {
           output += data.toString();
         }
-      }
+      },
+      cwd: directory
     });
 
     return {
