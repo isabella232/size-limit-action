@@ -25,6 +25,9 @@ inputs:
     required: false
     default: master
     description: "The name of the main/protected branch"
+  workflow_name:
+    required: false
+    description: "The name of the workflow that has size-limit json artifact"
   threshold:
     required: false
     default: 0.005

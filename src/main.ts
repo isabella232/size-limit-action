@@ -50,6 +50,8 @@ async function run() {
       );
     }
 
+    const workflowName =
+      getInput("workflow_name") || process.env.GITHUB_WORKFLOW;
     const skipStep = getInput("skip_step");
     const buildScript = getInput("build_script");
     const directory = getInput("directory") || process.cwd();
@@ -110,7 +112,7 @@ async function run() {
         downloadPath: __dirname,
 
         // eslint-disable-next-line camelcase
-        workflow_id: `${process.env.GITHUB_WORKFLOW}.yml`
+        workflow_id: `${workflowName}.yml`
       });
       base = JSON.parse(
         await fs.readFile(resultsFilePath, { encoding: "utf8" })

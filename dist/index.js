@@ -2810,6 +2810,7 @@ function run() {
             if (!isMainBranch && !pr) {
                 throw new Error("No PR found. Only pull_request workflows are supported.");
             }
+            const workflowName = getInput("workflow_name") || process.env.GITHUB_WORKFLOW;
             const skipStep = getInput("skip_step");
             const buildScript = getInput("build_script");
             const directory = getInput("directory") || process.cwd();
@@ -2851,7 +2852,7 @@ function run() {
                 // and this has not been run on the main branch yet
                 yield github_fetch_workflow_artifact_1.default(octokit, Object.assign(Object.assign({}, repo), { artifactName: ARTIFACT_NAME, branch: mainBranch, downloadPath: __dirname, 
                     // eslint-disable-next-line camelcase
-                    workflow_id: `${process.env.GITHUB_WORKFLOW}.yml` }));
+                    workflow_id: `${workflowName}.yml` }));
                 base = JSON.parse(yield fs_1.promises.readFile(resultsFilePath, { encoding: "utf8" }));
             }
             catch (error) {
