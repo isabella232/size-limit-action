@@ -25,6 +25,10 @@ inputs:
     required: false
     default: master
     description: "The name of the main/protected branch"
+  threshold:
+    required: false
+    default: 0.005
+    description: "The percentage threshold for size changes before posting a comment"
 runs:
   using: "node12"
   main: "dist/index.js"

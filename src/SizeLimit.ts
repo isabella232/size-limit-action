@@ -41,11 +41,15 @@ class SizeLimit {
   }
 
   private formatChange(base: number = 0, current: number = 0): string {
-    if (current === 0) {
-      return "-100%";
+    if (base === 0) {
+      return "added";
     }
 
-    const value = ((current - base) / current) * 100;
+    if (current === 0) {
+      return "removed";
+    }
+
+    const value = ((current - base) / base) * 100;
     const formatted =
       (Math.sign(value) * Math.ceil(Math.abs(value) * 100)) / 100;
 
@@ -132,15 +136,45 @@ class SizeLimit {
     );
   }
 
+  hasSizeChanges(
+    base: { [name: string]: IResult },
+    current: { [name: string]: IResult },
+    threshold = 0
+  ): boolean {
+    const names = [
+      ...new Set([...(base ? Object.keys(base) : []), ...Object.keys(current)])
+    ];
+    const isSize = names.some(
+      (name: string) => current[name] && current[name].total === undefined
+    );
+
+    // Always return true if time results are present
+    if (!isSize) {
+      return true;
+    }
+
+    return !!names.find((name: string) => {
+      const baseResult = base?.[name] || EmptyResult;
+      const currentResult = current[name] || EmptyResult;
+
+      if (baseResult.size === 0 && currentResult.size === 0) {
+        return true;
+      }
+
+      return (
+        Math.abs((currentResult.size - baseResult.size) / baseResult.size) *
+          100 >
+        threshold
+      );
+    });
+  }
+
   formatResults(
     base: { [name: string]: IResult },
     current: { [name: string]: IResult }
   ): Array<Array<string>> {
     const names = [
-      ...new Set([
-        ...(base ? Object.keys(base) : []),
-        ...Object.keys(current)
-      ])
+      ...new Set([...(base ? Object.keys(base) : []), ...Object.keys(current)])
     ];
     const isSize = names.some(
       (name: string) => current[name] && current[name].total === undefined

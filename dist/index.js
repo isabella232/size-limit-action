@@ -2777,7 +2777,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const path_1 = __importDefault(__webpack_require__(622));
 const fs_1 = __webpack_require__(747);
-const core_1 = __webpack_require__(470);
+const core = __importStar(__webpack_require__(470));
 const github_1 = __webpack_require__(469);
 const artifact = __importStar(__webpack_require__(214));
 const glob = __importStar(__webpack_require__(281));
@@ -2796,25 +2796,26 @@ function fetchPreviousComment(octokit, repo, pr) {
             // eslint-disable-next-line camelcase
             issue_number: pr.number }));
         const sizeLimitComment = commentList.find(comment => comment.body.startsWith(SIZE_LIMIT_HEADING));
-        console.log(commentList, sizeLimitComment);
         return !sizeLimitComment ? null : sizeLimitComment;
     });
 }
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
+        const { getInput, setFailed } = core;
         try {
             const { payload, repo } = github_1.context;
             const pr = payload.pull_request;
-            const mainBranch = core_1.getInput("main_branch");
+            const mainBranch = getInput("main_branch");
             const isMainBranch = github_1.context.ref.includes(mainBranch);
             if (!isMainBranch && !pr) {
                 throw new Error("No PR found. Only pull_request workflows are supported.");
             }
-            const skipStep = core_1.getInput("skip_step");
-            const buildScript = core_1.getInput("build_script");
-            const directory = core_1.getInput("directory") || process.cwd();
-            const windowsVerbatimArguments = core_1.getInput("windows_verbatim_arguments") === "true" ? true : false;
-            const githubToken = core_1.getInput("github_token");
+            const skipStep = getInput("skip_step");
+            const buildScript = getInput("build_script");
+            const directory = getInput("directory") || process.cwd();
+            const windowsVerbatimArguments = getInput("windows_verbatim_arguments") === "true" ? true : false;
+            const githubToken = getInput("github_token");
+            const threshold = getInput("threshold");
             const octokit = github_1.getOctokit(githubToken);
             const term = new Term_1.default();
             const limit = new SizeLimit_1.default();
@@ -2827,14 +2828,14 @@ function run() {
                     base = limit.parseResults(baseOutput);
                 }
                 catch (error) {
-                    console.log("Error parsing size-limit output. The output should be a json.");
+                    core.error("Error parsing size-limit output. The output should be a json.");
                     throw error;
                 }
                 try {
                     yield fs_1.promises.writeFile(resultsFilePath, JSON.stringify(base), "utf8");
                 }
                 catch (err) {
-                    console.error(err);
+                    core.error(err);
                 }
                 const globber = yield glob.create(resultsFilePath, {
                     followSymbolicLinks: false
@@ -2854,50 +2855,51 @@ function run() {
                 base = JSON.parse(yield fs_1.promises.readFile(resultsFilePath, { encoding: "utf8" }));
             }
             catch (error) {
-                console.log("Warning, unable to find base results");
-                console.log(error);
+                core.startGroup("Warning, unable to find base results");
+                core.debug(error);
+                core.endGroup();
             }
             const { status, output } = yield term.execSizeLimit(skipStep, buildScript, windowsVerbatimArguments);
             try {
                 current = limit.parseResults(output);
             }
             catch (error) {
-                console.log("Error parsing size-limit output. The output should be a json.");
+                core.error("Error parsing size-limit output. The output should be a json.");
                 throw error;
             }
-            const body = [
-                SIZE_LIMIT_HEADING,
-                markdown_table_1.default(limit.formatResults(base, current))
-            ].join("\r\n");
-            // @ts-ignore
-            const sizeLimitComment = yield fetchPreviousComment(octokit, repo, pr);
-            if (!sizeLimitComment) {
+            const thresholdNumber = Number(threshold);
+            const shouldComment = isNaN(thresholdNumber) ||
+                limit.hasSizeChanges(base, current, thresholdNumber);
+            if (shouldComment) {
+                const body = [
+                    SIZE_LIMIT_HEADING,
+                    markdown_table_1.default(limit.formatResults(base, current))
+                ].join("\r\n");
+                // @ts-ignore
+                const sizeLimitComment = yield fetchPreviousComment(octokit, repo, pr);
                 try {
-                    yield octokit.issues.createComment(Object.assign(Object.assign({}, repo), { 
-                        // eslint-disable-next-line camelcase
-                        issue_number: pr.number, body }));
+                    if (!sizeLimitComment) {
+                        yield octokit.issues.createComment(Object.assign(Object.assign({}, repo), { 
+                            // eslint-disable-next-line camelcase
+                            issue_number: pr.number, body }));
+                    }
+                    else {
+                        yield octokit.issues.updateComment(Object.assign(Object.assign({}, repo), { 
+                            // eslint-disable-next-line camelcase
+                            comment_id: sizeLimitComment.id, body }));
+                    }
                 }
                 catch (error) {
-                    console.log("Error creating comment. This can happen for PR's originating from a fork without write permissions.");
-                }
-            }
-            else {
-                try {
-                    yield octokit.issues.updateComment(Object.assign(Object.assign({}, repo), { 
-                        // eslint-disable-next-line camelcase
-                        comment_id: sizeLimitComment.id, body }));
-                }
-                catch (error) {
-                    console.log("Error updating comment. This can happen for PR's originating from a fork without write permissions.");
+                    core.error("Error updating comment. This can happen for PR's originating from a fork without write permissions.");
                 }
             }
             if (status > 0) {
-                core_1.setFailed("Size limit has been exceeded.");
+                setFailed("Size limit has been exceeded.");
             }
         }
         catch (error) {
-            console.error(error);
-            core_1.setFailed(error.message);
+            core.error(error);
+            setFailed(error.message);
         }
     });
 }
@@ -13277,10 +13279,13 @@ class SizeLimit {
         return `${Math.ceil(seconds * 1000)} ms`;
     }
     formatChange(base = 0, current = 0) {
-        if (current === 0) {
-            return "-100%";
+        if (base === 0) {
+            return "added";
         }
-        const value = ((current - base) / current) * 100;
+        if (current === 0) {
+            return "removed";
+        }
+        const value = ((current - base) / base) * 100;
         const formatted = (Math.sign(value) * Math.ceil(Math.abs(value) * 100)) / 100;
         if (value > 0) {
             return `+${formatted}% 🔺`;
@@ -13324,12 +13329,29 @@ class SizeLimit {
             return Object.assign(Object.assign({}, current), { [result.name]: Object.assign({ name: result.name, size: +result.size }, time) });
         }, {});
     }
+    hasSizeChanges(base, current, threshold = 0) {
+        const names = [
+            ...new Set([...(base ? Object.keys(base) : []), ...Object.keys(current)])
+        ];
+        const isSize = names.some((name) => current[name] && current[name].total === undefined);
+        // Always return true if time results are present
+        if (!isSize) {
+            return true;
+        }
+        return !!names.find((name) => {
+            const baseResult = (base === null || base === void 0 ? void 0 : base[name]) || EmptyResult;
+            const currentResult = current[name] || EmptyResult;
+            if (baseResult.size === 0 && currentResult.size === 0) {
+                return true;
+            }
+            return (Math.abs((currentResult.size - baseResult.size) / baseResult.size) *
+                100 >
+                threshold);
+        });
+    }
     formatResults(base, current) {
         const names = [
-            ...new Set([
-                ...(base ? Object.keys(base) : []),
-                ...Object.keys(current)
-            ])
+            ...new Set([...(base ? Object.keys(base) : []), ...Object.keys(current)])
         ];
         const isSize = names.some((name) => current[name] && current[name].total === undefined);
         const header = isSize
