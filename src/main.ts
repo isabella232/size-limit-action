@@ -1,7 +1,7 @@
 import path from "path";
 import { promises as fs } from "fs";
 
-import { getInput, setFailed } from "@actions/core";
+import * as core from "@actions/core";
 import { context, getOctokit } from "@actions/github";
 import * as artifact from "@actions/artifact";
 import * as glob from "@actions/glob";
@@ -29,15 +29,15 @@ async function fetchPreviousComment(
     issue_number: pr.number
   });
 
-
   const sizeLimitComment = commentList.find(comment =>
     comment.body.startsWith(SIZE_LIMIT_HEADING)
   );
-  console.log(commentList, sizeLimitComment);
   return !sizeLimitComment ? null : sizeLimitComment;
 }
 
 async function run() {
+  const { getInput, setFailed } = core;
+
   try {
     const { payload, repo } = context;
     const pr = payload.pull_request;
@@ -56,6 +56,8 @@ async function run() {
     const windowsVerbatimArguments =
       getInput("windows_verbatim_arguments") === "true" ? true : false;
     const githubToken = getInput("github_token");
+    const threshold = getInput("threshold");
+
     const octokit = getOctokit(githubToken);
     const term = new Term();
     const limit = new SizeLimit();
@@ -74,7 +76,7 @@ async function run() {
       try {
         base = limit.parseResults(baseOutput);
       } catch (error) {
-        console.log(
+        core.error(
           "Error parsing size-limit output. The output should be a json."
         );
         throw error;
@@ -83,7 +85,7 @@ async function run() {
       try {
         await fs.writeFile(resultsFilePath, JSON.stringify(base), "utf8");
       } catch (err) {
-        console.error(err);
+        core.error(err);
       }
       const globber = await glob.create(resultsFilePath, {
         followSymbolicLinks: false
@@ -114,8 +116,9 @@ async function run() {
         await fs.readFile(resultsFilePath, { encoding: "utf8" })
       );
     } catch (error) {
-      console.log("Warning, unable to find base results");
-      console.log(error);
+      core.startGroup("Warning, unable to find base results");
+      core.debug(error);
+      core.endGroup();
     }
 
     const { status, output } = await term.execSizeLimit(
@@ -126,43 +129,45 @@ async function run() {
     try {
       current = limit.parseResults(output);
     } catch (error) {
-      console.log(
+      core.error(
         "Error parsing size-limit output. The output should be a json."
       );
       throw error;
     }
 
-    const body = [
-      SIZE_LIMIT_HEADING,
-      table(limit.formatResults(base, current))
-    ].join("\r\n");
+    const thresholdNumber = Number(threshold);
 
-    // @ts-ignore
-    const sizeLimitComment = await fetchPreviousComment(octokit, repo, pr);
+    const shouldComment =
+      isNaN(thresholdNumber) ||
+      limit.hasSizeChanges(base, current, thresholdNumber);
 
-    if (!sizeLimitComment) {
+    if (shouldComment) {
+      const body = [
+        SIZE_LIMIT_HEADING,
+        table(limit.formatResults(base, current))
+      ].join("\r\n");
+
+      // @ts-ignore
+      const sizeLimitComment = await fetchPreviousComment(octokit, repo, pr);
+
       try {
-        await octokit.issues.createComment({
-          ...repo,
-          // eslint-disable-next-line camelcase
-          issue_number: pr.number,
-          body
-        });
+        if (!sizeLimitComment) {
+          await octokit.issues.createComment({
+            ...repo,
+            // eslint-disable-next-line camelcase
+            issue_number: pr.number,
+            body
+          });
+        } else {
+          await octokit.issues.updateComment({
+            ...repo,
+            // eslint-disable-next-line camelcase
+            comment_id: sizeLimitComment.id,
+            body
+          });
+        }
       } catch (error) {
-        console.log(
-          "Error creating comment. This can happen for PR's originating from a fork without write permissions."
-        );
-      }
-    } else {
-      try {
-        await octokit.issues.updateComment({
-          ...repo,
-          // eslint-disable-next-line camelcase
-          comment_id: sizeLimitComment.id,
-          body
-        });
-      } catch (error) {
-        console.log(
+        core.error(
           "Error updating comment. This can happen for PR's originating from a fork without write permissions."
         );
       }
@@ -172,7 +177,7 @@ async function run() {
       setFailed("Size limit has been exceeded.");
     }
   } catch (error) {
-    console.error(error);
+    core.error(error);
     setFailed(error.message);
   }
 }

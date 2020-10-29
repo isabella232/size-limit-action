@@ -67,9 +67,9 @@ describe("SizeLimit", () => {
       SizeLimit.TIME_RESULTS_HEADER,
       [
         "dist/index.js",
-        "98.53 KB (-9.92% 🔽)",
-        "2.6 s (+15.59% 🔺)",
-        "203 ms (+49.48% 🔺)",
+        "98.53 KB (-9.02% 🔽)",
+        "2.6 s (+18.47% 🔺)",
+        "203 ms (+97.94% 🔺)",
         "2.8 s"
       ]
     ]);
@@ -92,7 +92,7 @@ describe("SizeLimit", () => {
 
     expect(limit.formatResults(base, current)).toEqual([
       SizeLimit.SIZE_RESULTS_HEADER,
-      ["dist/index.js", "98.53 KB (-9.92% 🔽)"]
+      ["dist/index.js", "98.53 KB (-9.02% 🔽)"]
     ]);
   });
 
@@ -117,8 +117,8 @@ describe("SizeLimit", () => {
 
     expect(limit.formatResults(base, current)).toEqual([
       SizeLimit.SIZE_RESULTS_HEADER,
-      ["dist/index.js", "98.53 KB (-9.92% 🔽)"],
-      ["dist/new.js", "98.53 KB (+100% 🔺)"]
+      ["dist/index.js", "98.53 KB (-9.02% 🔽)"],
+      ["dist/new.js", "98.53 KB (added)"]
     ]);
   });
 
@@ -139,8 +139,68 @@ describe("SizeLimit", () => {
 
     expect(limit.formatResults(base, current)).toEqual([
       SizeLimit.SIZE_RESULTS_HEADER,
-      ["dist/index.js", "0 B (-100%)"],
-      ["dist/new.js", "98.53 KB (+100% 🔺)"]
+      ["dist/index.js", "0 B (removed)"],
+      ["dist/new.js", "98.53 KB (added)"]
     ]);
+  });
+
+  test("has size changes without times results", () => {
+    const limit = new SizeLimit();
+    const base = {
+      "dist/index.js": {
+        name: "dist/index.js",
+        size: 110894
+      }
+    };
+    const current = {
+      "dist/index.js": {
+        name: "dist/index.js",
+        size: 100894
+      }
+    };
+
+    expect(limit.hasSizeChanges(base, current, 0)).toBe(true);
+  });
+
+  test("does not have size changes without times results", () => {
+    const limit = new SizeLimit();
+    const base = {
+      "dist/index.js": {
+        name: "dist/index.js",
+        size: 110894
+      }
+    };
+    const current = {
+      "dist/index.js": {
+        name: "dist/index.js",
+        size: 110894
+      }
+    };
+
+    expect(limit.hasSizeChanges(base, current, 0)).toBe(false);
+  });
+
+  test("always has size changes with times results", () => {
+    const limit = new SizeLimit();
+    const base = {
+      "dist/index.js": {
+        name: "dist/index.js",
+        size: 110894,
+        running: 0.10210999999999999,
+        loading: 2.1658984375,
+        total: 2.2680084375000003
+      }
+    };
+    const current = {
+      "dist/index.js": {
+        name: "dist/index.js",
+        size: 110894,
+        running: 0.10210999999999999,
+        loading: 2.1658984375,
+        total: 2.2680084375000003
+      }
+    };
+
+    expect(limit.hasSizeChanges(base, current, 0)).toBe(false);
   });
 });
