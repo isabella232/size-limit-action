@@ -2848,11 +2848,17 @@ function run() {
             let base;
             let current;
             try {
-                // Ignore failures here as it is likely that this only happens when introducing size-limit
-                // and this has not been run on the main branch yet
-                yield github_fetch_workflow_artifact_1.default(octokit, Object.assign(Object.assign({}, repo), { artifactName: ARTIFACT_NAME, branch: mainBranch, downloadPath: __dirname, 
-                    // eslint-disable-next-line camelcase
-                    workflow_id: `${workflowName}.yml` }));
+                try {
+                    // Ignore failures here as it is likely that this only happens when introducing size-limit
+                    // and this has not been run on the main branch yet
+                    yield github_fetch_workflow_artifact_1.default(octokit, Object.assign(Object.assign({}, repo), { artifactName: ARTIFACT_NAME, branch: mainBranch, downloadPath: __dirname, 
+                        // eslint-disable-next-line camelcase
+                        workflow_id: `${workflowName}.yml` }));
+                }
+                catch (err) {
+                    console.log('error downloading', err);
+                }
+                console.log('downloaded');
                 base = JSON.parse(yield fs_1.promises.readFile(resultsFilePath, { encoding: "utf8" }));
             }
             catch (error) {

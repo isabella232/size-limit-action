@@ -103,6 +103,8 @@ async function run() {
     let current;
 
     try {
+
+      try {
       // Ignore failures here as it is likely that this only happens when introducing size-limit
       // and this has not been run on the main branch yet
       await download(octokit, {
@@ -114,6 +116,11 @@ async function run() {
         // eslint-disable-next-line camelcase
         workflow_id: `${workflowName}.yml`
       });
+      } catch (err) {
+        console.log('error downloading', err);
+      }
+      console.log('downloaded');
+
       base = JSON.parse(
         await fs.readFile(resultsFilePath, { encoding: "utf8" })
       );
