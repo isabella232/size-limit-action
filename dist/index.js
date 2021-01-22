@@ -3262,10 +3262,12 @@ function run() {
                 const body = [
                     SIZE_LIMIT_HEADING,
                     markdown_table_1.default(limit.formatResults(base, current, {
-                        baseWorkflow: baseWorkflow ? {
-                            sha: baseWorkflow === null || baseWorkflow === void 0 ? void 0 : baseWorkflow.head_sha,
-                            url: `https://github.com/${baseWorkflow.html_url}`,
-                        } : undefined,
+                        baseWorkflow: baseWorkflow
+                            ? {
+                                sha: baseWorkflow.head_sha,
+                                url: baseWorkflow.html_url,
+                            }
+                            : undefined,
                     })),
                 ].join("\r\n");
                 // @ts-ignore
