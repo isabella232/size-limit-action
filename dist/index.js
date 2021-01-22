@@ -13432,7 +13432,7 @@ class SizeLimit {
     formatSizeResult(name, base, current) {
         return [
             name,
-            ...(base ? [`${this.formatBytes(base.size)}`] : []),
+            `${this.formatBytes(base.size)}`,
             `${this.formatBytes(current.size)}`,
             `${this.formatChange(base.size, current.size)}`,
         ];
@@ -13495,9 +13495,7 @@ class SizeLimit {
                     "Current Size",
                     "Change",
                 ]
-                : base
-                    ? SizeLimit.SIZE_RESULTS_HEADER_WITH_BASE
-                    : SizeLimit.SIZE_RESULTS_HEADER
+                : SizeLimit.SIZE_RESULTS_HEADER
             : SizeLimit.TIME_RESULTS_HEADER;
         const fields = names.map((name) => {
             const baseResult = (base === null || base === void 0 ? void 0 : base[name]) || EmptyResult;
@@ -13510,8 +13508,7 @@ class SizeLimit {
         return [header, ...fields];
     }
 }
-SizeLimit.SIZE_RESULTS_HEADER = ["Path", "Current Size", "Change"];
-SizeLimit.SIZE_RESULTS_HEADER_WITH_BASE = [
+SizeLimit.SIZE_RESULTS_HEADER = [
     "Path",
     "Base Size",
     "Current Size",
