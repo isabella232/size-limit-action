@@ -26,7 +26,7 @@
     "@actions/github": "^4.0.0",
     "@actions/glob": "^0.1.1",
     "bytes": "^3.1.0",
-    "github-fetch-workflow-artifact": "^1.0.4",
+    "github-fetch-workflow-artifact": "^1.0.5",
     "has-yarn": "^2.1.0",
     "markdown-table": "^2.0.0"
   },
