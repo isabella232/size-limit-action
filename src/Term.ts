@@ -16,14 +16,14 @@ class Term {
 
     if (skipStep !== INSTALL_STEP && skipStep !== BUILD_STEP) {
       await exec(`${manager} install`, [], {
-        cwd: directory
+        cwd: directory,
       });
     }
 
     if (skipStep !== BUILD_STEP) {
       const script = buildScript || "build";
       await exec(`${manager} run ${script}`, [], {
-        cwd: directory
+        cwd: directory,
       });
     }
 
@@ -33,14 +33,14 @@ class Term {
       listeners: {
         stdout: (data: Buffer) => {
           output += data.toString();
-        }
+        },
       },
-      cwd: directory
+      cwd: directory,
     });
 
     return {
       status,
-      output
+      output,
     };
   }
 }

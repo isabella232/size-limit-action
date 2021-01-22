@@ -26,10 +26,10 @@ async function fetchPreviousComment(
   const { data: commentList } = await octokit.issues.listComments({
     ...repo,
     // eslint-disable-next-line camelcase
-    issue_number: pr.number
+    issue_number: pr.number,
   });
 
-  const sizeLimitComment = commentList.find(comment =>
+  const sizeLimitComment = commentList.find((comment) =>
     comment.body.startsWith(SIZE_LIMIT_HEADING)
   );
   return !sizeLimitComment ? null : sizeLimitComment;
@@ -90,7 +90,7 @@ async function run() {
         core.error(err);
       }
       const globber = await glob.create(resultsFilePath, {
-        followSymbolicLinks: false
+        followSymbolicLinks: false,
       });
       const files = await globber.glob();
 
@@ -103,23 +103,22 @@ async function run() {
     let current;
 
     try {
-
       try {
-      // Ignore failures here as it is likely that this only happens when introducing size-limit
-      // and this has not been run on the main branch yet
-      await download(octokit, {
-        ...repo,
-        artifactName: ARTIFACT_NAME,
-        branch: mainBranch,
-        downloadPath: __dirname,
+        // Ignore failures here as it is likely that this only happens when introducing size-limit
+        // and this has not been run on the main branch yet
+        await download(octokit, {
+          ...repo,
+          artifactName: ARTIFACT_NAME,
+          branch: mainBranch,
+          downloadPath: __dirname,
 
-        // eslint-disable-next-line camelcase
-        workflow_id: `${workflowName}.yml`
-      });
+          // eslint-disable-next-line camelcase
+          workflow_id: `${workflowName}.yml`,
+        });
       } catch (err) {
-        console.log('error downloading', err);
+        console.log("error downloading", err);
       }
-      console.log('downloaded');
+      console.log("downloaded");
 
       base = JSON.parse(
         await fs.readFile(resultsFilePath, { encoding: "utf8" })
@@ -153,7 +152,7 @@ async function run() {
     if (shouldComment) {
       const body = [
         SIZE_LIMIT_HEADING,
-        table(limit.formatResults(base, current))
+        table(limit.formatResults(base, current)),
       ].join("\r\n");
 
       // @ts-ignore
@@ -165,14 +164,14 @@ async function run() {
             ...repo,
             // eslint-disable-next-line camelcase
             issue_number: pr.number,
-            body
+            body,
           });
         } else {
           await octokit.issues.updateComment({
             ...repo,
             // eslint-disable-next-line camelcase
             comment_id: sizeLimitComment.id,
-            body
+            body,
           });
         }
       } catch (error) {
