@@ -91,7 +91,7 @@ describe("SizeLimit", () => {
     };
 
     expect(limit.formatResults(base, current)).toEqual([
-      SizeLimit.SIZE_RESULTS_HEADER_WITH_BASE,
+      SizeLimit.SIZE_RESULTS_HEADER,
       ["dist/index.js", "108.29 KB", "98.53 KB", "-9.02% 🔽"],
     ]);
   });
@@ -116,7 +116,7 @@ describe("SizeLimit", () => {
     };
 
     expect(limit.formatResults(base, current)).toEqual([
-      SizeLimit.SIZE_RESULTS_HEADER_WITH_BASE,
+      SizeLimit.SIZE_RESULTS_HEADER,
       ["dist/index.js", "108.29 KB", "98.53 KB", "-9.02% 🔽"],
       ["dist/new.js", "0 B", "98.53 KB", "added"],
     ]);
@@ -138,7 +138,7 @@ describe("SizeLimit", () => {
     };
 
     expect(limit.formatResults(base, current)).toEqual([
-      SizeLimit.SIZE_RESULTS_HEADER_WITH_BASE,
+      SizeLimit.SIZE_RESULTS_HEADER,
       ["dist/index.js", "108.29 KB", "0 B", "removed"],
       ["dist/new.js", "0 B", "98.53 KB", "added"],
     ]);

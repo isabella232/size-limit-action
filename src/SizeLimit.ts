@@ -18,8 +18,7 @@ const EmptyResult = {
 };
 
 class SizeLimit {
-  static SIZE_RESULTS_HEADER = ["Path", "Current Size", "Change"];
-  static SIZE_RESULTS_HEADER_WITH_BASE = [
+  static SIZE_RESULTS_HEADER = [
     "Path",
     "Base Size",
     "Current Size",
@@ -81,7 +80,7 @@ class SizeLimit {
   ): Array<string> {
     return [
       name,
-      ...(base ? [`${this.formatBytes(base.size)}`] : []),
+      `${this.formatBytes(base.size)}`,
       `${this.formatBytes(current.size)}`,
       `${this.formatChange(base.size, current.size)}`,
     ];
@@ -195,8 +194,6 @@ class SizeLimit {
             "Current Size",
             "Change",
           ]
-        : base
-        ? SizeLimit.SIZE_RESULTS_HEADER_WITH_BASE
         : SizeLimit.SIZE_RESULTS_HEADER
       : SizeLimit.TIME_RESULTS_HEADER;
     const fields = names.map((name: string) => {
