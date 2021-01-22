@@ -13981,7 +13981,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.getArtifactsForBranchAndWorkflow = void 0;
 var core = __importStar(__webpack_require__(470));
 // max pages of workflows to pagination through
-var MAX_PAGES = 5;
+var DEFAULT_MAX_PAGES = 50;
+// max results per page
+var DEFAULT_PAGE_LIMIT = 10;
 /**
  * Fetch artifacts from a workflow run from a branch
  *
@@ -13990,7 +13992,7 @@ var MAX_PAGES = 5;
  */
 function getArtifactsForBranchAndWorkflow(octokit, _a) {
     var e_1, _b;
-    var owner = _a.owner, repo = _a.repo, workflow_id = _a.workflow_id, branch = _a.branch, commit = _a.commit, artifactName = _a.artifactName;
+    var owner = _a.owner, repo = _a.repo, workflow_id = _a.workflow_id, branch = _a.branch, commit = _a.commit, artifactName = _a.artifactName, maxPages = _a.maxPages, perPage = _a.perPage;
     return __awaiter(this, void 0, void 0, function () {
         var currentPage, completedWorkflowRuns, _c, _d, response, workflowRuns, workflowRunsForCommit, e_1_1, _i, completedWorkflowRuns_1, workflowRun, artifacts, foundArtifact;
         return __generator(this, function (_e) {
@@ -14008,8 +14010,8 @@ function getArtifactsForBranchAndWorkflow(octokit, _a) {
                         // Below is typed incorrectly, it needs to be a string but typed as number
                         workflow_id: workflow_id,
                         branch: branch,
-                        status: "completed",
-                        per_page: 100,
+                        status: "success",
+                        per_page: perPage || DEFAULT_PAGE_LIMIT,
                     }));
                     _e.label = 2;
                 case 2: return [4 /*yield*/, _c.next()];
@@ -14028,7 +14030,7 @@ function getArtifactsForBranchAndWorkflow(octokit, _a) {
                         completedWorkflowRuns = completedWorkflowRuns.concat(workflowRunsForCommit);
                         return [3 /*break*/, 5];
                     }
-                    if (currentPage > MAX_PAGES) {
+                    if (currentPage > (maxPages !== null && maxPages !== void 0 ? maxPages : DEFAULT_MAX_PAGES)) {
                         core.warning("Workflow " + workflow_id + " not found in branch: " + branch + (commit ? " and commit: " + commit : ""));
                         return [2 /*return*/, null];
                     }
@@ -14841,6 +14843,17 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
+var __assign = (this && this.__assign) || function () {
+    __assign = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
+};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -14877,6 +14890,17 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
+var __rest = (this && this.__rest) || function (s, e) {
+    var t = {};
+    for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
+        t[p] = s[p];
+    if (s != null && typeof Object.getOwnPropertySymbols === "function")
+        for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) {
+            if (e.indexOf(p[i]) < 0 && Object.prototype.propertyIsEnumerable.call(s, p[i]))
+                t[p[i]] = s[p[i]];
+        }
+    return t;
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -14894,19 +14918,15 @@ var NoArtifactsError = /** @class */ (function (_super) {
 }(Error));
 exports.NoArtifactsError = NoArtifactsError;
 function download(octokit, _a) {
-    var owner = _a.owner, repo = _a.repo, artifactName = _a.artifactName, workflow_id = _a.workflow_id, branch = _a.branch, downloadPath = _a.downloadPath;
+    var owner = _a.owner, repo = _a.repo, artifactName = _a.artifactName, downloadPath = _a.downloadPath, params = __rest(_a, ["owner", "repo", "artifactName", "downloadPath"]);
     return __awaiter(this, void 0, void 0, function () {
         var artifacts;
         var _this = this;
         return __generator(this, function (_b) {
             switch (_b.label) {
-                case 0: return [4 /*yield*/, getArtifactsForBranchAndWorkflow_1.getArtifactsForBranchAndWorkflow(octokit, {
-                        owner: owner,
+                case 0: return [4 /*yield*/, getArtifactsForBranchAndWorkflow_1.getArtifactsForBranchAndWorkflow(octokit, __assign({ owner: owner,
                         repo: repo,
-                        workflow_id: workflow_id,
-                        branch: branch,
-                        artifactName: artifactName,
-                    })];
+                        artifactName: artifactName }, params))];
                 case 1:
                     artifacts = _b.sent();
                     if (!artifacts) {
