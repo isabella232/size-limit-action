@@ -18,7 +18,13 @@ const EmptyResult = {
 };
 
 class SizeLimit {
-  static SIZE_RESULTS_HEADER = ["Path", "Size"];
+  static SIZE_RESULTS_HEADER = ["Path", "Current Size", "Change"];
+  static SIZE_RESULTS_HEADER_WITH_BASE = [
+    "Path",
+    "Base Size",
+    "Current Size",
+    "Change",
+  ];
 
   static TIME_RESULTS_HEADER = [
     "Path",
@@ -75,10 +81,9 @@ class SizeLimit {
   ): Array<string> {
     return [
       name,
-      this.formatLine(
-        this.formatBytes(current.size),
-        this.formatChange(base.size, current.size)
-      ),
+      ...(base ? [`${this.formatBytes(base.size)}`] : []),
+      `${this.formatBytes(current.size)}`,
+      `${this.formatChange(base.size, current.size)}`,
     ];
   }
 
@@ -171,7 +176,8 @@ class SizeLimit {
 
   formatResults(
     base: { [name: string]: IResult },
-    current: { [name: string]: IResult }
+    current: { [name: string]: IResult },
+    { baseWorkflow }: { baseWorkflow?: { sha: string; url: string } } = {}
   ): Array<Array<string>> {
     const names = [
       ...new Set([...(base ? Object.keys(base) : []), ...Object.keys(current)]),
@@ -180,7 +186,18 @@ class SizeLimit {
       (name: string) => current[name] && current[name].total === undefined
     );
     const header = isSize
-      ? SizeLimit.SIZE_RESULTS_HEADER
+      ? baseWorkflow && base
+        ? [
+            "Path",
+            `[Base Size (${baseWorkflow.sha.slice(0, 7)})](${
+              baseWorkflow.url
+            })`,
+            "Current Size",
+            "Change",
+          ]
+        : base
+        ? SizeLimit.SIZE_RESULTS_HEADER_WITH_BASE
+        : SizeLimit.SIZE_RESULTS_HEADER
       : SizeLimit.TIME_RESULTS_HEADER;
     const fields = names.map((name: string) => {
       const baseResult = base?.[name] || EmptyResult;

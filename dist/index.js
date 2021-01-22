@@ -3226,19 +3226,20 @@ function run() {
             }
             let base;
             let current;
+            let baseWorkflow;
             try {
                 try {
                     // Ignore failures here as it is likely that this only happens when introducing size-limit
                     // and this has not been run on the main branch yet
-                    const results = yield github_fetch_workflow_artifact_1.default(octokit, Object.assign(Object.assign({}, repo), { artifactName: ARTIFACT_NAME, branch: mainBranch, downloadPath: __dirname, 
+                    const { workflowRun } = yield github_fetch_workflow_artifact_1.default(octokit, Object.assign(Object.assign({}, repo), { artifactName: ARTIFACT_NAME, branch: mainBranch, downloadPath: __dirname, 
                         // eslint-disable-next-line camelcase
                         workflow_id: `${workflowName}.yml` }));
-                    console.log({ results });
+                    baseWorkflow = workflowRun;
                 }
                 catch (err) {
-                    console.log("error downloading", err);
+                    core.debug("Error downloading");
+                    core.error(err);
                 }
-                console.log("downloaded");
                 base = JSON.parse(yield fs_1.promises.readFile(resultsFilePath, { encoding: "utf8" }));
             }
             catch (error) {
@@ -3260,7 +3261,12 @@ function run() {
             if (shouldComment) {
                 const body = [
                     SIZE_LIMIT_HEADING,
-                    markdown_table_1.default(limit.formatResults(base, current)),
+                    markdown_table_1.default(limit.formatResults(base, current, {
+                        baseWorkflow: baseWorkflow ? {
+                            sha: baseWorkflow === null || baseWorkflow === void 0 ? void 0 : baseWorkflow.head_sha,
+                            url: `https://github.com/${baseWorkflow.html_url}`,
+                        } : undefined,
+                    })),
                 ].join("\r\n");
                 // @ts-ignore
                 const sizeLimitComment = yield fetchPreviousComment(octokit, repo, pr);
@@ -13424,7 +13430,9 @@ class SizeLimit {
     formatSizeResult(name, base, current) {
         return [
             name,
-            this.formatLine(this.formatBytes(current.size), this.formatChange(base.size, current.size)),
+            ...(base ? [`${this.formatBytes(base.size)}`] : []),
+            `${this.formatBytes(current.size)}`,
+            `${this.formatChange(base.size, current.size)}`,
         ];
     }
     formatTimeResult(name, base, current) {
@@ -13472,13 +13480,22 @@ class SizeLimit {
                 threshold);
         });
     }
-    formatResults(base, current) {
+    formatResults(base, current, { baseWorkflow } = {}) {
         const names = [
             ...new Set([...(base ? Object.keys(base) : []), ...Object.keys(current)]),
         ];
         const isSize = names.some((name) => current[name] && current[name].total === undefined);
         const header = isSize
-            ? SizeLimit.SIZE_RESULTS_HEADER
+            ? baseWorkflow && base
+                ? [
+                    "Path",
+                    `[Base Size (${baseWorkflow.sha.slice(0, 7)})](${baseWorkflow.url})`,
+                    "Current Size",
+                    "Change",
+                ]
+                : base
+                    ? SizeLimit.SIZE_RESULTS_HEADER_WITH_BASE
+                    : SizeLimit.SIZE_RESULTS_HEADER
             : SizeLimit.TIME_RESULTS_HEADER;
         const fields = names.map((name) => {
             const baseResult = (base === null || base === void 0 ? void 0 : base[name]) || EmptyResult;
@@ -13491,7 +13508,13 @@ class SizeLimit {
         return [header, ...fields];
     }
 }
-SizeLimit.SIZE_RESULTS_HEADER = ["Path", "Size"];
+SizeLimit.SIZE_RESULTS_HEADER = ["Path", "Current Size", "Change"];
+SizeLimit.SIZE_RESULTS_HEADER_WITH_BASE = [
+    "Path",
+    "Base Size",
+    "Current Size",
+    "Change",
+];
 SizeLimit.TIME_RESULTS_HEADER = [
     "Path",
     "Size",

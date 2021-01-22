@@ -101,12 +101,13 @@ async function run() {
 
     let base;
     let current;
+    let baseWorkflow;
 
     try {
       try {
         // Ignore failures here as it is likely that this only happens when introducing size-limit
         // and this has not been run on the main branch yet
-        const results = await download(octokit, {
+        const { workflowRun } = await download(octokit, {
           ...repo,
           artifactName: ARTIFACT_NAME,
           branch: mainBranch,
@@ -115,12 +116,11 @@ async function run() {
           // eslint-disable-next-line camelcase
           workflow_id: `${workflowName}.yml`,
         });
-
-        console.log({results});
+        baseWorkflow = workflowRun;
       } catch (err) {
-        console.log("error downloading", err);
+        core.debug("Error downloading");
+        core.error(err);
       }
-      console.log("downloaded");
 
       base = JSON.parse(
         await fs.readFile(resultsFilePath, { encoding: "utf8" })
@@ -154,7 +154,16 @@ async function run() {
     if (shouldComment) {
       const body = [
         SIZE_LIMIT_HEADING,
-        table(limit.formatResults(base, current)),
+        table(
+          limit.formatResults(base, current, {
+            baseWorkflow: baseWorkflow
+              ? {
+                  sha: baseWorkflow.head_sha,
+                  url: baseWorkflow.html_url,
+                }
+              : undefined,
+          })
+        ),
       ].join("\r\n");
 
       // @ts-ignore

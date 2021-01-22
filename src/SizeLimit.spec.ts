@@ -9,7 +9,7 @@ describe("SizeLimit", () => {
         passed: true,
         size: "110894",
         running: "0.10210999999999999",
-        loading: "2.1658984375"
+        loading: "2.1658984375",
       },
     ]);
 
@@ -91,8 +91,8 @@ describe("SizeLimit", () => {
     };
 
     expect(limit.formatResults(base, current)).toEqual([
-      SizeLimit.SIZE_RESULTS_HEADER,
-      ["dist/index.js", "98.53 KB (-9.02% 🔽)"],
+      SizeLimit.SIZE_RESULTS_HEADER_WITH_BASE,
+      ["dist/index.js", "108.29 KB", "98.53 KB", "-9.02% 🔽"],
     ]);
   });
 
@@ -116,9 +116,9 @@ describe("SizeLimit", () => {
     };
 
     expect(limit.formatResults(base, current)).toEqual([
-      SizeLimit.SIZE_RESULTS_HEADER,
-      ["dist/index.js", "98.53 KB (-9.02% 🔽)"],
-      ["dist/new.js", "98.53 KB (added)"],
+      SizeLimit.SIZE_RESULTS_HEADER_WITH_BASE,
+      ["dist/index.js", "108.29 KB", "98.53 KB", "-9.02% 🔽"],
+      ["dist/new.js", "0 B", "98.53 KB", "added"],
     ]);
   });
 
@@ -138,9 +138,42 @@ describe("SizeLimit", () => {
     };
 
     expect(limit.formatResults(base, current)).toEqual([
-      SizeLimit.SIZE_RESULTS_HEADER,
-      ["dist/index.js", "0 B (removed)"],
-      ["dist/new.js", "98.53 KB (added)"],
+      SizeLimit.SIZE_RESULTS_HEADER_WITH_BASE,
+      ["dist/index.js", "108.29 KB", "0 B", "removed"],
+      ["dist/new.js", "0 B", "98.53 KB", "added"],
+    ]);
+  });
+
+  test("should format size-limit with fetched base artifact", () => {
+    const limit = new SizeLimit();
+    const base = {
+      "dist/index.js": {
+        name: "dist/index.js",
+        size: 110894,
+      },
+    };
+    const current = {
+      "dist/index.js": {
+        name: "dist/index.js",
+        size: 100894,
+      },
+    };
+
+    expect(
+      limit.formatResults(base, current, {
+        baseWorkflow: {
+          sha: "cccccccccccccccc",
+          url: "https://github.com/owner/repo/runs/123456",
+        },
+      })
+    ).toEqual([
+      [
+        "Path",
+        "[Base Size (ccccccc)](https://github.com/owner/repo/runs/123456)",
+        "Current Size",
+        "Change",
+      ],
+      ["dist/index.js", "108.29 KB", "98.53 KB", "-9.02% 🔽"],
     ]);
   });
 
@@ -201,6 +234,6 @@ describe("SizeLimit", () => {
       },
     };
 
-    expect(limit.hasSizeChanges(base, current, 0)).toBe(false);
+    expect(limit.hasSizeChanges(base, current, 0)).toBe(true);
   });
 });
