@@ -2,18 +2,18 @@
 # yarn lockfile v1
 
 
-"@actions/artifact@^0.4.0":
-  version "0.4.0"
-  resolved "https://registry.yarnpkg.com/@actions/artifact/-/artifact-0.4.0.tgz#a2e9ba2791a21ddf0028d520d2b481e161027fee"
-  integrity sha512-iPDMvCIogq22F3r11xyBbH2wtUuJYfa3llGM8Kxilx6lVrcGpWa5Bnb1ukD/MEmCn9SBXdz6eqNLa10GQ20HNg==
+"@actions/artifact@^0.5.0":
+  version "0.5.0"
+  resolved "https://registry.yarnpkg.com/@actions/artifact/-/artifact-0.5.0.tgz#6882702d9cd961f240d7ce1d07106c1b9cb5e39f"
+  integrity sha512-uo9zlqm8sZBysFVaBZh8iAe2xNf9x2fDQZZMHiKyBEShvCB2S2nA4+Kt3Xsi9eG5O1E8fVMwEVuwLR3/Zy3mrA==
   dependencies:
-    "@actions/core" "^1.2.1"
+    "@actions/core" "^1.2.6"
     "@actions/http-client" "^1.0.7"
     "@types/tmp" "^0.1.0"
     tmp "^0.1.0"
     tmp-promise "^2.0.2"
 
-"@actions/core@^1.2.0", "@actions/core@^1.2.1", "@actions/core@^1.2.6":
+"@actions/core@^1.2.6":
   version "1.2.6"
   resolved "https://registry.yarnpkg.com/@actions/core/-/core-1.2.6.tgz#a78d49f41a4def18e88ce47c2cac615d5694bf09"
   integrity sha512-ZQYitnqiyBc3D+k7LsgSBmMDVkOVidaagDG7j3fOym77jNunWRuYx7VSHa9GNfFZh+zh61xsCjRj4JxMZlDqTA==
@@ -35,12 +35,12 @@
     "@octokit/plugin-paginate-rest" "^2.2.3"
     "@octokit/plugin-rest-endpoint-methods" "^4.0.0"
 
-"@actions/glob@^0.1.0":
-  version "0.1.0"
-  resolved "https://registry.yarnpkg.com/@actions/glob/-/glob-0.1.0.tgz#969ceda7e089c39343bca3306329f41799732e40"
-  integrity sha512-lx8SzyQ2FE9+UUvjqY1f28QbTJv+w8qP7kHHbfQRhphrlcx0Mdmm1tZdGJzfxv1jxREa/sLW4Oy8CbGQKCJySA==
+"@actions/glob@^0.1.1":
+  version "0.1.1"
+  resolved "https://registry.yarnpkg.com/@actions/glob/-/glob-0.1.1.tgz#0af851312dfed21fdf9eac3473cfde93ffa56e40"
+  integrity sha512-ikM4GVZOgSGDNTjv0ECJ8AOqmDqQwtO4K1M4P465C9iikRq34+FwCjUVSwzgOYDP85qtddyWpzBw5lTub/9Xmg==
   dependencies:
-    "@actions/core" "^1.2.0"
+    "@actions/core" "^1.2.6"
     minimatch "^3.0.4"
 
 "@actions/http-client@^1.0.7", "@actions/http-client@^1.0.8":
@@ -2539,10 +2539,10 @@ getpass@^0.1.1:
   dependencies:
     assert-plus "^1.0.0"
 
-github-fetch-workflow-artifact@^1.0.3:
-  version "1.0.3"
-  resolved "https://registry.yarnpkg.com/github-fetch-workflow-artifact/-/github-fetch-workflow-artifact-1.0.3.tgz#5667db20279fed172da6b68ef380ede40b7a04d5"
-  integrity sha512-4NPmmqN30HVb+Q/vHEiYfRhFcZ2BN1ma1IpsjGqWnvmmFUZPnogpAzIy5EHuq0Qr5PSmmemeYFkbWv1MNIoKpg==
+github-fetch-workflow-artifact@^1.0.4:
+  version "1.0.4"
+  resolved "https://registry.yarnpkg.com/github-fetch-workflow-artifact/-/github-fetch-workflow-artifact-1.0.4.tgz#a5b51196f2e8c65cdc95ee2e94956fe796b42757"
+  integrity sha512-gMzWPWHy/w/u3w1Qx55rc9qdT/gL5VauR/lZoVtiz1q3EdBuiw9zZcU5ts7i0k080Xtug9IC0xM6HWOw6JHNNg==
   dependencies:
     "@actions/core" "^1.2.6"
     "@actions/exec" "^1.0.4"
